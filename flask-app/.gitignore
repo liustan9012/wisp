@@ -153,4 +153,4 @@ cython_debug/
 instance/
 static/images/
 *.db
-.vscode/
+.vscode/*

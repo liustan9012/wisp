@@ -1,4 +1,4 @@
-FROM node:20 AS build-stage
+FROM node:20-alpine AS build-stage
 
 
 RUN npm i -g vite
@@ -10,7 +10,6 @@ COPY package.json package-lock.json /app/react-app/
 RUN npm  install
 
 COPY . /app/react-app/
-
 RUN vite build
 
 FROM nginx:alpine

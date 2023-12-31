@@ -13,11 +13,8 @@ const Navlink = ({ tag }) => {
     <Grid
       component={Paper}
       item
-      // xs={5}
-      // md={3}
-      // lg={2}
-      sx={{ mb: 2, mr: 2, maxWidth: 200 }}
-      // sx={{ mb: 2, mr: 2, width: { xs: 160, sm: 200 }, flex: { xs: 1, md: 0 } }}
+
+      sx={{ m: 2,  width: { xs: 150, sm: 180 }, flex: { xs: 1, md: 0 } }}
       elevation={elevation}
       onMouseEnter={(e) => setElevation(8)}
       onMouseLeave={(e) => setElevation(initElevation)}
@@ -79,7 +76,7 @@ const Navlink = ({ tag }) => {
 };
 
 const NavlinkTable = ({ tagNavlinks }) => {
-  const {t} = useTranslation()
+  const { t } = useTranslation();
   return (
     <Box sx={{ mt: 4 }}>
       {tagNavlinks.map(([tag, navlinks]) => (
