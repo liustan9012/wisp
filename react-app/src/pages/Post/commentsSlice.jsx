@@ -1,22 +1,20 @@
-import { createSlice } from '@reduxjs/toolkit'
-
-
+import { createSlice } from "@reduxjs/toolkit";
 
 export const commentsSlice = createSlice({
-  name: 'comment',
+  name: "comment",
   initialState: {
-    newComment: '',
+    newComment: "",
   },
   reducers: {
     setNewComment: (state, action) => {
-      state.newComment=action.payload
+      state.newComment = action.payload;
     },
   },
-})
+});
 
 // Action creators are generated for each case reducer function
-export const { setNewComment,} = commentsSlice.actions
+export const { setNewComment } = commentsSlice.actions;
 
-export default commentsSlice.reducer
+export default commentsSlice.reducer;
 
 // export const selectCurrentAuth = (state) => state.auth

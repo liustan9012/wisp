@@ -5,49 +5,45 @@ const postApi = baseApi.injectEndpoints({
     newPost: build.mutation({
       query: (post) => ({
         url: `/post`,
-        method: 'Post',
+        method: "Post",
         body: post,
       }),
-      invalidatesTags: ['Posts']
+      invalidatesTags: ["Posts"],
     }),
     updatePost: build.mutation({
       query: ({ postId, post }) => ({
         url: `/post/${postId}`,
-        method: 'Post',
+        method: "Post",
         body: post,
       }),
-      invalidatesTags: ['Posts']
+      invalidatesTags: ["Posts", "Post"],
     }),
     deletePost: build.mutation({
       query: (postId) => ({
         url: `/post/${postId}/delete`,
-        method: 'Post',
+        method: "Post",
       }),
-      invalidatesTags: ['Posts']
-
+      invalidatesTags: ["Posts"],
     }),
     getPost: build.query({
       query: (postId) => ({
         url: `/post/${postId}`,
-        method: 'get',
+        method: "get",
       }),
-      providesTags: ['Post']
+      providesTags: ["Post"],
     }),
     getPostList: build.query({
-      query: () => ({
+      query: ({ params }) => ({
         url: `/posts`,
-        method: 'get',
+        method: "get",
+        params,
       }),
-      providesTags: ['Posts']
-
+      providesTags: ["Posts"],
     }),
 
-
     overrideExisting: false,
-  })
-
-})
-
+  }),
+});
 
 export const {
   useNewPostMutation,
@@ -55,6 +51,6 @@ export const {
   useDeletePostMutation,
   useGetPostQuery,
   useGetPostListQuery,
-} = postApi
+} = postApi;
 
-export default postApi
+export default postApi;

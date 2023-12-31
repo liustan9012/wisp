@@ -1,33 +1,23 @@
-import React from "react"
-import { Typography } from "@mui/material"
+import React from "react";
+import { Box, Typography } from "@mui/material";
+import { useTranslation } from "react-i18next";
+import MDEditor from "@uiw/react-md-editor";
 
-import { useSelector } from "react-redux"
-import { selectCurrentAuth } from "../../api/authSlice"
-import { useGetHelloQuery } from "../../api/auth"
+import { useSelector } from "react-redux";
+import { selectCurrentAuth } from "../../api/authSlice";
+import { useGetPostQuery } from "../../api/post";
 
 export default function About() {
-  const { data, error, isLoading } = useGetHelloQuery()
-  const auth = useSelector(selectCurrentAuth)
+  const { t, i18n } = useTranslation();
+
+  const auth = useSelector(selectCurrentAuth);
+  const { data, error, isLoading, isFetching } = useGetPostQuery("about");
+  if (isFetching) return <Typography sx={{ mb: 4, mt: 4 }}>{t("Loading...")}</Typography>;
+  const { post, msg } = data;
+  if (msg === "error") return <Typography sx={{ mb: 4, mt: 4 }}>{t("about")}</Typography>;
   return (
-    <Typography
-      variant="button"
-      display="block"
-      gutterBottom
-    >
-      <p>Hello 1</p>
-      <p>data :
-        {error ? (
-          <>Oh no, there was an error</>
-        ) : isLoading ? (
-          <>Loading...</>
-        ) : data ? (
-          <>
-            {`${data} ${auth.username || ""}`}
-          </>
-        ) : null}
-      </p>
-      {/* <p>error {error}</p> */}
-      {/* <p>isLoading {isLoading}</p> */}
-    </Typography>
-  )
+    <Box sx={{ mt: 4 }}>
+      <MDEditor.Markdown source={post.content} />
+    </Box>
+  );
 }

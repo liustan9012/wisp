@@ -1,27 +1,30 @@
-import * as React from 'react';
+import * as React from "react";
 import { Typography, Link } from "@mui/material";
-
+import { useTranslation } from "react-i18next";
 
 export default function Footer(props) {
+  const { t } = useTranslation();
   return (
     <Typography
       variant="body2"
       color="text.secondary"
-      align="center" {...props}
+      align="center"
       sx={{
-        mt: 4, mb: 4,
-        flex: '0 0 auto'
+        mt: 4,
+        mb: 4,
+        flex: "0 0 auto",
+        flexGrow:0,
       }}
+      {...props}
     >
       <Link color="inherit" href={"/"}>
-        Home
+        {t("home")}
       </Link>
-      {' '}
-      {'Copyright © '}
-
-      {' '}
-      {new Date().getFullYear()}
-      {'.'}
+      {`  © ${new Date().getFullYear()} `}
+      {`Powered by `}
+      <Link color="inherit" href="https://github.com/liustan9012/wisp">
+        {"github"}
+      </Link>
     </Typography>
   );
 }

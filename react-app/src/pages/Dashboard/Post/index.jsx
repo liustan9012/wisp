@@ -1,11 +1,4 @@
+import PostTable from "./PostTable";
+import NewPost from "./CreatePost";
 
-
-
-
-import PostTable from './PostTable';
-import NewPost from './NewPost';
-
-export {
-  PostTable,
-  NewPost,
-}
+export { PostTable, NewPost };

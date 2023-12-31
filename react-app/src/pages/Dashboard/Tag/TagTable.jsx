@@ -1,127 +1,90 @@
-import { Delete, Edit } from '@mui/icons-material';
-import { Button, Link } from '@mui/material';
-import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import * as React from 'react';
-import { Link as RouteLink, useLocation } from 'react-router-dom';
-import { useDeleteTagMutation, useGetTagsQuery, } from '../../../api/tag';
-import { timeConverter } from '../../../utils/datetime';
-
-import AdminTableHead from '../../../componets/AdminTableHead';
-import { getComparator, stableSort } from '../../../utils/stableSort';
+import { Add, Delete, Edit } from "@mui/icons-material";
+import { Button, Link } from "@mui/material";
+import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableRow from "@mui/material/TableRow";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import * as React from "react";
+import { Link as RouteLink, useLocation, useSearchParams } from "react-router-dom";
+import { useDeleteTagMutation, useGetTagsQuery, useTagListQuery } from "../../../api/tag";
+import { timeConverter } from "../../../utils/datetime";
+import { AdminTablePagination, AdminTableHead } from "../../Componets/AsminTable";
+import { paramsToObject } from "../../../utils/converter";
+import { useTranslation } from "react-i18next";
 
 const headCells = [
   {
-    id: 'id',
+    id: "id",
     numeric: true,
-    label: 'ID',
+    label: "id",
   },
   {
-    id: 'name',
+    id: "name",
     numeric: false,
-    label: 'Name',
+    label: "name",
   },
-
   {
-    id: 'created_at',
+    id: "created_at",
     numeric: true,
-    label: 'Creation Date',
+    label: "creation date",
   },
   {
-    id: 'username',
-    numeric: false,
-    label: 'User',
-  },
-  {
-    id: 'post_count',
+    id: "post_count",
     numeric: true,
-    label: 'Post Count',
+    label: "post count",
   },
   {
-    id: 'action',
+    id: "navlink_count",
+    numeric: true,
+    label: "navlink count",
+  },
+  {
+    id: "action",
     numeric: false,
-    label: 'Action',
+    label: "action",
   },
 ];
 
-
-
-export default function TagTable() {
-
-
-  const { data, isLoading, } = useGetTagsQuery()
-
-  const [order, setOrder] = React.useState('desc');
-  const [orderBy, setOrderBy] = React.useState('created_at');
+export function TagTableComponet({ order, total, orderBy, page, rowsPerPage, tabledata }) {
+  const { t } = useTranslation();
+  const location = useLocation();
   const [selected, setSelected] = React.useState(null);
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
-  const location = useLocation()
 
-  const [deleteTag,] = useDeleteTagMutation()
+  const [deleteTag] = useDeleteTagMutation();
+  const emptyRows = page > 0 ? Math.max(0, 1 * rowsPerPage - tabledata.length) : 0;
 
-  const tags = data?.tags || []
-
-  const handleRequestSort = (event, property) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
-
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-
-  // Avoid a layout jump when reaching the last page with empty rows.
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - tags.length) : 0;
-
-  const visibleRows = React.useMemo(
-    () =>
-      stableSort(tags, getComparator(order, orderBy)).slice(
-        page * rowsPerPage,
-        page * rowsPerPage + rowsPerPage,
-      ),
-    [tags, order, orderBy, page, rowsPerPage],
-  );
-  if (isLoading) return <Typography>Loading...</Typography>
-  if (!data || data?.msg === 'error') return <Typography>Missing!</Typography>
   return (
-    <Box sx={{ mt: 2, minWidth: '80vw', display: 'flex', justifyContent: 'center' }}>
-      <Paper variant="outlined" sx={{ minWidth: '70vw', mb: 2 }}>
-        <Toolbar
-          sx={{ pl: { sm: 2 }, pr: { xs: 1, sm: 1 }, }}
-        >
-          <Typography sx={{ pl: 4 }}>Tags</Typography>
+    <Box
+      sx={{
+        mt: 2,
+        minWidth: "80vw",
+        display: "flex",
+        justifyContent: "center",
+      }}
+    >
+      <Paper variant="outlined" sx={{ minWidth: "70vw", mb: 2 }}>
+        <Toolbar sx={{ pl: { sm: 2 },  pr: { xs: 8 } }}>
+          <Typography sx={{ pl: 4, flexGrow: 1, textTransform: "capitalize" }}>{t("tag")}</Typography>
+          <Button
+            startIcon={<Add />}
+            variant="contained"
+            sx={{ flexGrow: 0 }}
+            component={RouteLink}
+            to="/admin/tag/create"
+          >
+            {t("add")}
+          </Button>
         </Toolbar>
         <TableContainer>
-          <Table
-            sx={{ minWidth: 750 }}
-            aria-labelledby="Tag Table"
-          // size={dense ? 'small' : 'medium'}
-          >
-            <AdminTableHead
-              headCells={headCells}
-              order={order}
-              orderBy={orderBy}
-              onRequestSort={handleRequestSort}
-            />
+          <Table sx={{ minWidth: 750 }} aria-labelledby="Tag Table" size={"small"}>
+            <AdminTableHead headCells={headCells} order={order} orderBy={orderBy} />
             <TableBody>
-              {visibleRows.map(({ id, name, created_at, username, post_count }) => {
+              {tabledata.map(({ id, name, created_at, content_type, post_count, navlink_count }) => {
                 return (
                   <TableRow
                     hover
@@ -130,49 +93,40 @@ export default function TagTable() {
                     tabIndex={-1}
                     key={id}
                     selected={selected == id}
-                    sx={{ cursor: 'pointer' }}
+                    sx={{ cursor: "pointer" }}
                   >
-                    <TableCell
-                      component="th"
-                      id={`tag-${id}`}
-                      scope="row"
-                      padding="none"
-                      align="center"
-                    >
+                    <TableCell component="th" id={`tag-${id}`} scope="row" padding="none" align="center">
                       {id}
                     </TableCell>
                     <TableCell align="center">
-                      <Link
-                        underline='none'
-                        to={`/admin/tag/${id}`}
-                        component={RouteLink}>
+                      <Link underline="none" to={`/admin/tag/${id}`} component={RouteLink}>
                         {name}
                       </Link>
                     </TableCell>
                     <TableCell align="center">{timeConverter(created_at)}</TableCell>
-                    <TableCell align="center">{username}</TableCell>
                     <TableCell align="center">{post_count}</TableCell>
+                    <TableCell align="center">{navlink_count}</TableCell>
                     <TableCell align="center">
                       <Button
-                        variant='outlined'
-                        size='small'
+                        variant="outlined"
+                        size="small"
                         startIcon={<Edit />}
                         sx={{ mr: 1, width: 100 }}
                         to={`/admin/tag/${id}/edit`}
                         state={{ from: location }}
                         component={RouteLink}
                       >
-                        Edit
+                        {t("edit")}
                       </Button>
                       <Button
-                        variant='outlined'
-                        size='small'
-                        color='warning'
+                        variant="outlined"
+                        size="small"
+                        color="warning"
                         startIcon={<Delete />}
                         sx={{ mr: 1, width: 100 }}
                         onClick={() => deleteTag(id)}
                       >
-                        Delete
+                        {t("delete")}
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -190,17 +144,26 @@ export default function TagTable() {
             </TableBody>
           </Table>
         </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={tags.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
+        <AdminTablePagination total={total} rowsPerPage={rowsPerPage} page={page} />
       </Paper>
-
     </Box>
   );
+}
+
+export default function TagTable() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const params = paramsToObject(searchParams.entries());
+  const { data, isLoading } = useTagListQuery({ params });
+
+  if (isLoading) return <Typography>Loading...</Typography>;
+  if (!data || data?.msg === "error") return <Typography>Loading Missing! {`${data?.error}`} </Typography>;
+  const data_params = {
+    page: data.page,
+    rowsPerPage: data.per_page,
+    total: data.total,
+    order: data.order,
+    orderBy: data.order_by,
+  };
+
+  return <TagTableComponet tabledata={data.tags} {...data_params} />;
 }

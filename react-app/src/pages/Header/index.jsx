@@ -1,104 +1,63 @@
-import * as React from 'react';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
+import * as React from "react";
+import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import Toolbar from "@mui/material/Toolbar";
+import IconButton from "@mui/material/IconButton";
 // import Typography from '@mui/material/Typography';
-import Menu from '@mui/material/Menu';
-import MenuIcon from '@mui/icons-material/Menu';
-import Container from '@mui/material/Container';
-import Button from '@mui/material/Button';
-import Tooltip from '@mui/material/Tooltip';
-import MenuItem from '@mui/material/MenuItem';
-import AdbIcon from '@mui/icons-material/Adb';
-import { useTheme } from '@mui/material/styles';
-import { Link } from '@mui/material';
-import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import Menu from "@mui/material/Menu";
+import MenuIcon from "@mui/icons-material/Menu";
+import Container from "@mui/material/Container";
+import Button from "@mui/material/Button";
+import MenuItem from "@mui/material/MenuItem";
+import AdbIcon from "@mui/icons-material/Adb";
+import { Link, Stack, Typography, useTheme } from "@mui/material";
+import { Link as RouterLink, useMatch } from "react-router-dom";
 
-import StringAvatar from '../../componets/StringAvatar'
-import { useSignOutMutation } from '../../api/auth';
-import { unsetUser, selectCurrentAuth } from '../../api/authSlice';
-
-
-
+import UserAvatar from "../Componets/UserAvatar";
+import { useTranslation } from "react-i18next";
+import { useContext } from "react";
+import LightModeToggle from "../Componets/LightToggle";
+import LanguageToggle from "../Componets/LanguageTogole";
 
 function Header() {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
-  const [anchorElUser, setAnchorElUser] = React.useState(null);
-  const theme = useTheme()
-  const dispatch = useDispatch()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const auth = useSelector(selectCurrentAuth)
+  const theme = useTheme();
+  const { t } = useTranslation();
   const pages = [
-    // { to: auth.username ? `/user/${auth.userid}/posts`: `/posts`, context: "Blog" },
-    { to: `/posts`, context: "Blog" },
-    { to: "/tags", context: "Tag" },
-    { to: "/timeline", context: "Timeline" },
-    { to: "/about", context: "About" },
-  ]
-  const [signOut,
-    // { isLoading, isError },
-  ] = useSignOutMutation()
+    { to: `/posts`, context: t("blog") },
+    { to: "/tags", context: t("tag") },
+    { to: "/timeline", context: t("timeline") },
+    { to: "/about", context: t("about") },
+  ].map(({ to, context }) => ({
+    to,
+    context,
+    selected: useMatch({ path: to, end: false }) ? true : false,
+  }));
+
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
   };
-  const handleOpenUserMenu = (event) => {
-    setAnchorElUser(event.currentTarget);
-  };
-
   const handleCloseNavMenu = () => {
     setAnchorElNav(null);
   };
 
-  const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
-  };
-  const handleSignOut = async () => {
-    try {
-      await signOut().unwrap()
-      dispatch(unsetUser())
-      navigate(location || '/')
-      // }
-    } catch (error) {
-      console.error(error)
-    }
-
-  }
-  const menusGuest = [
-    { key: "Signin", to: "/signin", },
-    { key: "SignUp", to: "/signup", },
-  ]
-  const menusUser = [
-    { key: "About", to: "/about", },
-    {
-      key: "Logout",
-      to: "",
-      onClick: () => {
-        handleSignOut()
-        handleCloseUserMenu()
-      },
-    },
-  ]
-  const menusAdmin = [
-    { key: "New Post", to: "/post/new", },
-    { key: "Dashboard", to: "/admin", },
-  ].concat(menusUser)
-
-
   return (
-    <AppBar position="static" color="inherit" sx={{ flex: '0 0 auto' }}>
-      <Container maxWidth="xl" sx={{ borderBottom: "1px solid #0000001f" }} >
-        <Toolbar disableGutters >
-          <IconButton to="/"
-            component={RouterLink}
-            sx={{ display: { xs: 'none', md: 'flex' }, mr: 1 }}
-            color="primary"
-          >
+    <AppBar
+      position="static"
+      color="inherit"
+      sx={{
+        m: "0 auto",
+        maxWidth: { xs: 1, lg: 1400 },
+        flex: "0 0 auto",
+        boxShadow: "0px 3px 3px -2px rgba(0,0,0,0.2)",
+      }}
+    >
+      <Container maxWidth="xl" sx={{}}>
+        <Toolbar disableGutters>
+          <IconButton to="/" component={RouterLink} sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} color="primary">
             <AdbIcon />
           </IconButton>
-          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
+          <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
             <IconButton
               size="large"
               aria-label="account of current user"
@@ -113,87 +72,49 @@ function Header() {
               id="menu-appbar"
               anchorEl={anchorElNav}
               anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
+                vertical: "bottom",
+                horizontal: "left",
               }}
               keepMounted
               transformOrigin={{
-                vertical: 'top',
-                horizontal: 'left',
+                vertical: "top",
+                horizontal: "left",
               }}
               open={Boolean(anchorElNav)}
               onClose={handleCloseNavMenu}
               sx={{
-                display: { xs: 'block', md: 'none' },
+                display: { xs: "block", md: "none" },
               }}
             >
-              {pages.map(({ to, context, }) => (
-                <MenuItem key={context} onClick={handleCloseNavMenu}>
-                  <Link
-                    component={RouterLink}
-                    to={to}
-                    underline="none">
+              {pages.map(({ to, context, selected }) => (
+                <MenuItem key={context} onClick={handleCloseNavMenu} selected={selected}>
+                  <Link component={RouterLink} to={to} underline="none" sx={{ width: 1 }}>
                     {context}
                   </Link>
                 </MenuItem>
               ))}
             </Menu>
           </Box>
-          <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} color="primary" />
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            {pages.map(({ to, context, }) => {
-              return (
-                <Button
-                  key={context}
-                  onClick={handleCloseNavMenu}
-                  sx={{ my: 2, display: 'block' }}
-                  to={to}
-                  component={RouterLink}
-                >
+          <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
+            {pages.map(({ to, context, selected }) => (
+              <Button key={context} onClick={handleCloseNavMenu} sx={{ my: 2 }} to={to} component={RouterLink}>
+                <Typography variant="button" color={selected ? theme.palette.primary[900] : "primary"}>
                   {context}
-                </Button>
-              )
-            }
-            )}
+                </Typography>
+              </Button>
+            ))}
           </Box>
-
-          <Box sx={{ flexGrow: 0 }}>
-            <Tooltip title="Open settings">
-              <IconButton onClick={handleOpenUserMenu} color="primary" sx={{ p: 0 }}>
-                <StringAvatar alt="User" name={auth?.username} sx={{ bgcolor: theme.palette.primary.main }} />
-              </IconButton>
-            </Tooltip>
-            <Menu
-              sx={{ mt: '45px' }}
-              id="menu-appbar"
-              anchorEl={anchorElUser}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              open={Boolean(anchorElUser)}
-              onClose={handleCloseUserMenu}
-            >
-              {(auth?.username ?
-                auth?.isAdmin ?
-                  menusAdmin
-                  : menusUser
-                : menusGuest).map(({ key, to, onClick }) =>
-                  <MenuItem key={key} onClick={onClick || handleCloseUserMenu}>
-                    <Link component={RouterLink} to={to} state={{ from: location }} underline="none"  >
-                      {key}
-                    </Link>
-                  </MenuItem>)}
-            </Menu>
-          </Box>
+          <Stack direction={"row"} spacing={1} sx={{ alignItems: "center" }}>
+            <Button component={RouterLink} to="/navlink" underline="none">
+              <Typography variant="button">{t("navlink")}</Typography>
+            </Button>
+            <LanguageToggle color="primary" />
+            <LightModeToggle color="primary" />
+            <UserAvatar />
+          </Stack>
         </Toolbar>
-      </Container >
-    </AppBar >
+      </Container>
+    </AppBar>
   );
 }
 export default Header;

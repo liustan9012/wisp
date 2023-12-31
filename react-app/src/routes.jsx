@@ -1,26 +1,29 @@
-import React from 'react';
-import { createBrowserRouter } from 'react-router-dom';
+import React from "react";
+import { NavLink, createBrowserRouter } from "react-router-dom";
 
 import Home from "./pages/Home";
 
 import About from "./pages/About";
 
-import Layout, { AdminLayout } from "./Layout";
+import Layout, { AdminLayout, AccountLayout } from "./Layout";
 import { RequireAuth } from "./context";
-import ErrorPage, { NoMatch } from './pages/ErrorPage';
-import Post from './pages/Post';
+import ErrorPage, { NoMatch } from "./pages/ErrorPage";
+import Post from "./pages/Post";
 import PostList from "./pages/PostList";
-import SignIn from './pages/Signin';
-import SignUp from './pages/Signup';
-import TimeLine from './pages/TImeLine';
-import TagPage from './pages/Tag';
-import TagsPage from './pages/Tags';
+import SignIn from "./pages/Signin";
+import SignUp from "./pages/Signup";
+import TimeLine from "./pages/Timeline";
+import TagPage from "./pages/Tag";
+import TagsPage from "./pages/Tags";
 
-import { NewPost, PostTable } from './pages/Dashboard/Post';
-import { TagTable, CreateTag } from './pages/Dashboard/Tag';
-import { CreateUser, UserTable } from './pages/Dashboard/User';
-import { CommentTable } from './pages/Dashboard/Comment';
-
+import { NewPost, PostTable } from "./pages/Dashboard/Post";
+import { TagTable, CreateTag } from "./pages/Dashboard/Tag";
+import { CreateUser, UserTable } from "./pages/Dashboard/User";
+import { CommentTable } from "./pages/Dashboard/Comment";
+import { NavlinkTable, NewNavlink } from "./pages/Dashboard/Navlink";
+import Navlinks from "./pages/Navlinks";
+import Settings from "./pages/Settings";
+import { Tune } from "@mui/icons-material";
 
 const router = createBrowserRouter([
   {
@@ -33,7 +36,7 @@ const router = createBrowserRouter([
         children: [
           {
             index: true,
-            element: <Home />,
+            element: <PostList />,
           },
           {
             path: "post/:postId",
@@ -57,7 +60,11 @@ const router = createBrowserRouter([
           },
           {
             path: "post/new",
-            element: <RequireAuth><NewPost /></RequireAuth>,
+            element: (
+              <RequireAuth>
+                <NewPost />
+              </RequireAuth>
+            ),
           },
 
           {
@@ -73,14 +80,21 @@ const router = createBrowserRouter([
             path: "*",
             element: <NoMatch />,
           },
-        ]
+        ],
       },
     ],
   },
-
+  {
+    path: "navlink",
+    element: <Navlinks />,
+  },
   {
     path: "/admin",
-    element: <RequireAuth><AdminLayout /></RequireAuth>,
+    element: (
+      <RequireAuth>
+        <AdminLayout />
+      </RequireAuth>
+    ),
     errorElement: <ErrorPage />,
     children: [
       {
@@ -97,6 +111,10 @@ const router = createBrowserRouter([
           {
             path: "user/create",
             element: <CreateUser />,
+          },
+          {
+            path: "post",
+            element: <PostTable />,
           },
           {
             path: "post/list",
@@ -134,30 +152,62 @@ const router = createBrowserRouter([
             path: "comment/list",
             element: <CommentTable />,
           },
+          {
+            path: "navlink/list",
+            element: <NavlinkTable />,
+          },
+          {
+            path: "navlink/create",
+            element: <NewNavlink />,
+          },
+          {
+            path: "navlink/:navlinkId/edit",
+            element: <NewNavlink />,
+          },
 
           {
             path: "*",
-            element: <NoMatch  />,
+            element: <NoMatch />,
           },
-        ]
-      }
-    ]
+        ],
+      },
+    ],
   },
 
   {
     path: "/signin",
-    element: <SignIn />,
+    element: <AccountLayout />,
+    errorElement: <ErrorPage />,
+    children: [
+      {
+        index: true,
+        element: <SignIn />,
+      },
+    ],
   },
   {
     path: "/signup",
-    element: <SignUp />,
+    element: <AccountLayout />,
+    errorElement: <ErrorPage />,
+    children: [
+      {
+        index: true,
+        element: <SignUp />,
+      },
+    ],
   },
   {
-    path: "/signup",
-    element: <SignUp />,
+    path: "/settings",
+    element: <AccountLayout />,
+    errorElement: <ErrorPage />,
+    children: [
+      {
+        index: Tune,
+        element: <Settings />,
+      },
+      ,
+    ],
   },
+]);
 
-
-])
-
-export default router
+export default router;

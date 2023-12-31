@@ -1,6 +1,4 @@
-
-
- export function descendingComparator(a, b, orderBy) {
+export function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
     return -1;
   }
@@ -11,11 +9,10 @@
 }
 
 export function getComparator(order, orderBy) {
-  return order === 'desc'
+  return order === "desc"
     ? (a, b) => descendingComparator(a, b, orderBy)
     : (a, b) => -descendingComparator(a, b, orderBy);
 }
-
 
 // with exampleArray.slice().sort(exampleComparator)
 export function stableSort(array, comparator) {

@@ -1,8 +1,8 @@
 from datetime import datetime
-from werkzeug.security import generate_password_hash, check_password_hash
+
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from app import db
-
 
 # @login.user_loader
 # def load_user(id):
@@ -20,18 +20,19 @@ class User(db.Model):
                          unique=True,
                          index=True,
                          nullable=False)
-    password_hash = db.Column(db.String(128))
+    password_hash = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=datetime.now)
     updated_at = db.Column(db.DateTime,
                            default=datetime.now,
                            onupdate=datetime.now)
     is_admin = db.Column(db.Boolean, default=False)
 
-    posts = db.relationship('Post', backref='author', lazy=True)
+    posts = db.relationship('Post', back_populates='author', lazy=True)
 
-    comments = db.relationship('Comment', backref='user', lazy=True)
+    comments = db.relationship('Comment', back_populates='user', lazy=True)
 
-    tags = db.relationship('Tag', backref='user')
+    tags = db.relationship('Tag', back_populates='user', lazy=True)
+    navlinks = db.relationship('Navlink', back_populates='user', lazy=True)
 
     def __repr__(self):
         return f'<User {self.username}>'

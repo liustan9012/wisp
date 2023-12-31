@@ -1,116 +1,86 @@
-import Box from '@mui/material/Box';
-import Paper from '@mui/material/Paper';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import * as React from 'react';
-import { useGetUsersQuery } from '../../../api/auth';
-import { timeConverter } from '../../../utils/datetime';
-
-import AdminTableHead from '../../../componets/AdminTableHead';
-import { getComparator, stableSort } from '../../../utils/stableSort';
+import * as React from "react";
+import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TablePagination from "@mui/material/TablePagination";
+import TableRow from "@mui/material/TableRow";
+import Toolbar from "@mui/material/Toolbar";
+import Typography from "@mui/material/Typography";
+import { Link as RouteLink, useLocation, useSearchParams } from "react-router-dom";
+import { AdminTableHead, AdminTablePagination } from "../../Componets/AsminTable";
+import { useGetUsersQuery } from "../../../api/auth";
+import { timeConverter } from "../../../utils/datetime";
+import { paramsToObject } from "../../../utils/converter";
+import { useTranslation } from "react-i18next";
+import { Button } from "@mui/material";
+import { Add } from "@mui/icons-material";
 
 const headCells = [
   {
-    id: 'id',
+    id: "id",
     numeric: true,
-    label: 'ID',
+    label: "id",
   },
   {
-    id: 'username',
+    id: "username",
     numeric: false,
-    label: 'Name',
+    label: "user name",
   },
   {
-    id: 'email',
+    id: "email",
     numeric: false,
-    label: 'Email',
+    label: "email",
   },
   {
-    id: 'created_at',
+    id: "created_at",
     numeric: true,
-    label: 'Creation Date',
+    label: "creation date",
   },
   {
-    id: 'is_admin',
+    id: "is_admin",
     numeric: true,
-    label: 'Role',
+    label: "role",
   },
 ];
 
-
-
-
 export default function UserTable() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const params = paramsToObject(searchParams.entries());
+  const { t } = useTranslation();
+  const { data, isLoading } = useGetUsersQuery({ params });
 
-
-  const { data, isLoading, } = useGetUsersQuery()
-
-  const [order, setOrder] = React.useState('asc');
-  const [orderBy, setOrderBy] = React.useState('id');
   const [selected, setSelected] = React.useState(null);
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
+  if (isLoading) {
+    return <Typography>Loading...</Typography>;
+  }
 
-  const users = data?.users || []
-
-  const handleRequestSort = (event, property) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
-
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-
-  // Avoid a layout jump when reaching the last page with empty rows.
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - users.length) : 0;
-
-  const visibleUsers = React.useMemo(
-    () =>
-      stableSort(users, getComparator(order, orderBy)).slice(
-        page * rowsPerPage,
-        page * rowsPerPage + rowsPerPage,
-      ),
-    [users, order, orderBy, page, rowsPerPage],
-  );
-  if (isLoading) return <Typography>Loading...</Typography>
-  if (!data || data?.msg === 'error') return <Typography>Missing!</Typography>
+  const users = data.users || [];
+  const { page, per_page: rowsPerPage, order, order_by: orderBy, total } = data;
+  const emptyRows = page > 0 ? Math.max(0, 1 * rowsPerPage - users.length) : 0;
   return (
-    <Box sx={{ mt: 2, width: '100%', display: 'flex', justifyContent: 'center' }}>
-      <Paper variant="outlined" sx={{ width: '80%', mb: 2 }}>
-        <Toolbar
-          sx={{ pl: { sm: 2 }, pr: { xs: 1, sm: 1 }, }}
-        >
-          <Typography sx={{ pl: 4 }}>Users</Typography>
+    <Box sx={{ mt: 2, width: "100%", display: "flex", justifyContent: "center" }}>
+      <Paper variant="outlined" sx={{ width: "80%", mb: 2 }}>
+        <Toolbar sx={{ pl: { sm: 2 }, pr: { xs: 8 } }}>
+          <Typography sx={{ pl: 4, flexGrow: 1, textTransform: "capitalize" }}>{t("user")}</Typography>
+          <Button
+            startIcon={<Add />}
+            variant="contained"
+            sx={{ flexGrow: 0 }}
+            component={RouteLink}
+            to="/admin/user/create"
+          >
+            {t("add")}
+          </Button>
         </Toolbar>
         <TableContainer>
-          <Table
-            sx={{ minWidth: 750 }}
-            aria-labelledby="User Table"
-          >
-            <AdminTableHead
-              headCells={headCells}
-              order={order}
-              orderBy={orderBy}
-              onRequestSort={handleRequestSort}
-            />
+          <Table sx={{ minWidth: 750 }} aria-labelledby="User Table" size="small">
+            <AdminTableHead headCells={headCells} order={order} orderBy={orderBy} />
             <TableBody>
-              {visibleUsers.map((user) => {
+              {users.map((user) => {
                 return (
                   <TableRow
                     hover
@@ -119,23 +89,15 @@ export default function UserTable() {
                     tabIndex={-1}
                     key={user.id}
                     selected={selected == user.id}
-                    sx={{ cursor: 'pointer' }}
+                    sx={{ cursor: "pointer" }}
                   >
-                    <TableCell
-                      component="th"
-                      id={`user-${user.username.id}`}
-                      scope="row"
-                      padding="none"
-                      align="center"
-                    >
+                    <TableCell component="th" id={`user-${user.username.id}`} scope="row" padding="none" align="center">
                       {user.id}
                     </TableCell>
                     <TableCell align="center">{user.username}</TableCell>
                     <TableCell align="center">{user.email}</TableCell>
                     <TableCell align="center">{timeConverter(user.created_at)}</TableCell>
-                    <TableCell align="center">
-                      {user.is_admin ? 'admin' : 'user'}
-                    </TableCell>
+                    <TableCell align="center">{user.is_admin ? "admin" : "user"}</TableCell>
                   </TableRow>
                 );
               })}
@@ -151,17 +113,8 @@ export default function UserTable() {
             </TableBody>
           </Table>
         </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={users.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
+        <AdminTablePagination total={total} rowsPerPage={rowsPerPage} page={page} />
       </Paper>
-
     </Box>
   );
 }

@@ -1,7 +1,7 @@
-import * as React from 'react';
-import Avatar from '@mui/material/Avatar';
+import * as React from "react";
+import Avatar from "@mui/material/Avatar";
 // import Stack from '@mui/material/Stack';
-import PropTypes from 'prop-types'
+import PropTypes from "prop-types";
 
 function stringToColor(string) {
   let hash = 0;
@@ -12,7 +12,7 @@ function stringToColor(string) {
     hash = string.charCodeAt(i) + ((hash << 5) - hash);
   }
 
-  let color = '#';
+  let color = "#";
 
   for (i = 0; i < 3; i += 1) {
     const value = (hash >> (i * 8)) & 0xff;
@@ -23,25 +23,22 @@ function stringToColor(string) {
   return color;
 }
 
-
-
 function StringAvatar({ name, alt, bgcolor = "", ...restProps }) {
-  const namestr = name || alt
-  let children = namestr
-  if (namestr.split(' ')?.length > 1) {
-    children = `${namestr.split(' ')[0][0]}${namestr.split(' ')[1][0]}`
+  const namestr = name || alt;
+  let children = namestr;
+  if (namestr.split(" ")?.length > 1) {
+    children = `${namestr.split(" ")[0][0]}${namestr.split(" ")[1][0]}`;
   } else {
-    children = namestr.slice(0, 2)
+    children = namestr.slice(0, 2);
   }
-  children = children.toUpperCase()
+  children = children.toUpperCase();
   const newProps = {
     sx: {
       bgcolor: bgcolor || stringToColor(namestr),
     },
     children,
     alt,
-    ...restProps
-
+    ...restProps,
   };
   return <Avatar {...newProps} />;
 }
@@ -50,8 +47,6 @@ StringAvatar.propTypes = {
   name: PropTypes.string,
   alt: PropTypes.string.isRequired,
   bgcolor: PropTypes.string,
-}
+};
 
-
-
-export default StringAvatar
+export default StringAvatar;
