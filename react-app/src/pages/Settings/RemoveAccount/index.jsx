@@ -42,12 +42,15 @@ export default function RemoveAccount() {
     }
   };
   return (
-    <Box sx={{ p: 3 }}>
-      <Stack direction={"row"} spacing={2} sx={{ mb: 2, alignItems: "center" }}>
+    <Box sx={{ p: 2 }}>
+      <Stack direction={"row"} spacing={2} sx={{ mb: 1, alignItems: "center" }}>
         <PersonRemoveIcon color={"primary"} />
-        <Typography>{t("Remove Account")}</Typography>
+        <Typography component="h1" variant="h6" sx={{ textTransform: "capitalize" }}>
+          {t("Remove Account")}
+        </Typography>
       </Stack>
       <Divider />
+      <Typography sx={{ mt: 2 }}>{t("Remove Account")}</Typography>
       <Stack direction={"row-reverse"} sx={{ mt: 2 }}>
         <Button onClick={handleOpen}>{t("Remove Account")}</Button>
         <Dialog open={open} onClose={handleClose} fullWidth PaperProps={{ sx: { p: 4 } }}>

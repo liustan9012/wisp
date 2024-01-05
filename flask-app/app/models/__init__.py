@@ -16,6 +16,7 @@ from .form_model import (
     TagPaginationModel,
     PostPaginationModel,
     UserPaginationModel,
+    NavlinkStatusModel,
 )
 from .navlink import Navlink, NavlinkStatus, navlink_tags
 from .user import User

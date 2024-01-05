@@ -24,6 +24,7 @@ import { NavlinkTable, NewNavlink } from "./pages/Dashboard/Navlink";
 import Navlinks from "./pages/Navlinks";
 import Settings from "./pages/Settings";
 import { Tune } from "@mui/icons-material";
+import Dataset from "./pages/Dashboard/Dateset";
 
 const router = createBrowserRouter([
   {
@@ -86,6 +87,10 @@ const router = createBrowserRouter([
   },
   {
     path: "navlink",
+    // async lazy() {
+    //   let Navlinks = await import("./pages/Navlinks");
+    //   return { Component: Navlinks.default };
+    // },
     element: <Navlinks />,
   },
   {
@@ -163,6 +168,10 @@ const router = createBrowserRouter([
           {
             path: "navlink/:navlinkId/edit",
             element: <NewNavlink />,
+          },
+          {
+            path: "dataset",
+            element: <Dataset />,
           },
 
           {

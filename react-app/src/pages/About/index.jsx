@@ -1,11 +1,11 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
 import { useTranslation } from "react-i18next";
-import MDEditor from "@uiw/react-md-editor";
 
 import { useSelector } from "react-redux";
 import { selectCurrentAuth } from "../../api/authSlice";
 import { useGetPostQuery } from "../../api/post";
+import { MarkdownPreview } from "../Componets/MDEditor";
 
 export default function About() {
   const { t, i18n } = useTranslation();
@@ -17,7 +17,7 @@ export default function About() {
   if (msg === "error") return <Typography sx={{ mb: 4, mt: 4 }}>{t("about")}</Typography>;
   return (
     <Box sx={{ mt: 4 }}>
-      <MDEditor.Markdown source={post.content} />
+      <MarkdownPreview source={post.content} />
     </Box>
   );
 }

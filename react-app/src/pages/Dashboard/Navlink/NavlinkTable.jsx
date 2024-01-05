@@ -9,10 +9,10 @@ import TableContainer from "@mui/material/TableContainer";
 import TableRow from "@mui/material/TableRow";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
+import ImportExportOutlinedIcon from "@mui/icons-material/ImportExportOutlined";
 import * as React from "react";
 import { Link as RouteLink, useLocation, useSearchParams } from "react-router-dom";
 import { timeConverter } from "../../../utils/datetime";
-
 import { useGetNavlinksQuery, useDeleteNavlinkMutation } from "../../../api/navlink";
 import { AdminTablePagination, AdminTableHead } from "../../Componets/AsminTable";
 import { paramsToObject } from "../../../utils/converter";
@@ -78,7 +78,7 @@ export const NavlinkTableComponet = ({ order, total, orderBy, page, rowsPerPage,
 
   const [deleteNavlink] = useDeleteNavlinkMutation();
 
-  const emptyRows = page > 0 ? Math.max(0, 1 * rowsPerPage - tabledata.length) : 0;
+  const emptyRows = page > 0 ? Math.max(0, Math.min(rowsPerPage - tabledata.length, 10)) : 0;
   return (
     <Box
       sx={{
@@ -91,15 +91,19 @@ export const NavlinkTableComponet = ({ order, total, orderBy, page, rowsPerPage,
       <Paper variant="outlined">
         <Toolbar sx={{ pl: { sm: 2 }, pr: { xs: 8 } }}>
           <Typography sx={{ pl: 4, flexGrow: 1, textTransform: "capitalize" }}>{t("navlink")}</Typography>
-          <Button
-            startIcon={<Add />}
-            variant="contained"
-            sx={{ flexGrow: 0 }}
-            component={RouteLink}
-            to="/admin/navlink/create"
-          >
-            {t("add")}
-          </Button>
+          <Stack direction={"row"} sx={{ flexGrow: 0 }} spacing={2}>
+            <Button startIcon={<Add />} variant="contained" component={RouteLink} to="/admin/navlink/create">
+              {t("add")}
+            </Button>
+            <Button
+              startIcon={<ImportExportOutlinedIcon />}
+              variant="contained"
+              component={RouteLink}
+              to="/admin/dataset"
+            >
+              {t("import")}
+            </Button>
+          </Stack>
         </Toolbar>
         <TableContainer>
           <Table sx={{ minWidth: 750 }} aria-labelledby="Navlink Table" size="small">

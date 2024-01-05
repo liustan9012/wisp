@@ -7,7 +7,7 @@ import LabelIcon from "@mui/icons-material/Label";
 import LinkIcon from "@mui/icons-material/Link";
 import PersonIcon from "@mui/icons-material/Person";
 import Divider from "@mui/material/Divider";
-import { Drawer, Box, Tooltip, Menu, Link, Stack, Button } from "@mui/material";
+import { Drawer, Box, Tooltip, Menu, Link, Stack, Button, ListItemButton } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import List from "@mui/material/List";
 import ListSubheader from "@mui/material/ListSubheader";
@@ -26,6 +26,7 @@ import UserAvatar from "../Componets/UserAvatar";
 import { useTranslation } from "react-i18next";
 import LanguageToggle from "../Componets/LanguageTogole";
 import LightModeToggle from "../Componets/LightToggle";
+import DatasetOutlinedIcon from "@mui/icons-material/DatasetOutlined";
 
 const drawerWidth = 240;
 
@@ -81,26 +82,14 @@ export function DashboardAppBar({ open, handleDrawerOpen }) {
             </Typography>
           </Box>
           <Stack direction={"row"}>
-            <Button
-              component={RouterLink}
-              to="/"
-              variant="h6"
-              color="inherit"
-              underline="none"
-            >
+            <Button component={RouterLink} to="/" variant="h6" color="inherit" underline="none">
               {t("home")}
             </Button>
-            <Button
-              component={RouterLink}
-              to="/navlink"
-              variant="h6"
-              color="inherit"
-              underline="none"
-            >
+            <Button component={RouterLink} to="/navlink" variant="h6" color="inherit" underline="none">
               {t("navlink")}
             </Button>
           </Stack>
-          <Stack direction={"row"} spacing={1}  sx={{alignItems:"center"}}>
+          <Stack direction={"row"} spacing={1} sx={{ alignItems: "center" }}>
             <LanguageToggle />
             <LightModeToggle />
             <UserAvatar />
@@ -143,11 +132,7 @@ export function DashboardDrawer({ open, handleDrawerClose }) {
     >
       <DrawerHeader>
         <IconButton onClick={handleDrawerClose}>
-          {theme.direction === "ltr" ? (
-            <ChevronLeftIcon />
-          ) : (
-            <ChevronRightIcon />
-          )}
+          {theme.direction === "ltr" ? <ChevronLeftIcon /> : <ChevronRightIcon />}
         </IconButton>
       </DrawerHeader>
       <Divider />
@@ -156,11 +141,7 @@ export function DashboardDrawer({ open, handleDrawerClose }) {
         component="nav"
         aria-labelledby="admin-dashboard"
         subheader={
-          <ListSubheader
-            component="div"
-            id="nested-list-subheader"
-            sx={{ textTransform: "capitalize" }}
-          >
+          <ListSubheader component="div" id="nested-list-subheader" sx={{ textTransform: "capitalize" }}>
             {t("admin dashboard")}
           </ListSubheader>
         }
@@ -193,9 +174,7 @@ export function DashboardDrawer({ open, handleDrawerClose }) {
               icon: CommentIcon,
               text: t("comment"),
             },
-            nestedItems: [
-              { to: "/admin/comment/list", text: t("comment list") },
-            ],
+            nestedItems: [{ to: "/admin/comment/list", text: t("comment list") }],
           },
           {
             item: { to: "/admin/navlink", icon: LinkIcon, text: t("link") },
@@ -203,6 +182,10 @@ export function DashboardDrawer({ open, handleDrawerClose }) {
               { to: "/admin/navlink/list", text: t("navlink list") },
               { to: "/admin/navlink/create", text: t("create navlink") },
             ],
+          },
+          {
+            item: { to: "/admin/dataset", icon: DatasetOutlinedIcon, text: t("dataset") },
+
           },
         ].map(({ item, nestedItems }) => (
           <NestedListItem key={item.to} item={item} nestedItems={nestedItems} />

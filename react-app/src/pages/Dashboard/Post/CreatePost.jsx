@@ -2,9 +2,7 @@ import { Box, Stack, Typography } from "@mui/material";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
 import TextField from "@mui/material/TextField";
-import MDEditor from "@uiw/react-md-editor";
-// import MDEditor from "@uiw/react-md-editor/nohighlight";
-import React, { Suspense, lazy } from "react";
+import React from "react";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 
 import Button from "@mui/material/Button";
@@ -20,16 +18,7 @@ import NewTag from "../../Componets/NewTag";
 import TagsSelect from "../../Componets/TagsSelect";
 import { setSelectTags, setUserTags } from "../../Componets/tagSlice";
 import { useTranslation } from "react-i18next";
-
-// const LazyMDEditor = lazy(() => import("@uiw/react-md-editor"));
-// const MDEditor = (props) => {
-//   return (
-//     <Suspense fallback={<Typography>Loading...</Typography>}>
-//       {/* 在 Suspense 组件中渲染懒加载的组件 */}
-//       <LazyMDEditor {...props}/>
-//     </Suspense>
-//   );
-// };
+import { MDEditor } from "../../Componets/MDEditor";
 
 const ENABLE_COMMENT = 1;
 const DISABLE_COMMENT = 2;
@@ -228,7 +217,7 @@ function Post({ post }) {
 }
 
 export default function NewPost() {
-  const {t} = useTranslation()
+  const { t } = useTranslation();
   const { postId } = useParams();
   const { data, isFetching } = useGetPostQuery(postId, {
     skip: !!!postId,
@@ -241,6 +230,6 @@ export default function NewPost() {
   React.useEffect(() => {
     dispatch(setSelectTags({ selectTags: tags }));
   }, [tags]);
-  if (isFetching) return <Typography>{t("Loading...")}</Typography>
+  if (isFetching) return <Typography>{t("Loading...")}</Typography>;
   return <Post post={post} />;
 }

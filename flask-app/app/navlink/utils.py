@@ -2,15 +2,24 @@ import os
 from hashlib import md5
 from pathlib import Path
 from urllib.parse import urljoin
+import base64
+from datetime import datetime
 
 from flask import current_app
 from loguru import logger
 from requests.exceptions import Timeout
 from requests_html import HTMLSession
-
+from lxml import etree, html as et_html
+from lxml.html import builder as E
 from config import basedir
 
 images_path = Path(r"static/images")
+
+
+def save_nav_img(name, content):
+    file_name = os.path.join(basedir, current_app.config["NAVICONPATH"], name)
+    with open(file_name, "wb") as f:
+        f.write(content)
 
 
 def request_icon_description(navlink_url: str):
@@ -69,11 +78,7 @@ def request_icon_description(navlink_url: str):
                     ext = _ext
 
             ico_name = md5(navlink_url.encode()).hexdigest()
-            file_name = os.path.join(
-                basedir, current_app.config["NAVICONPATH"], f"{ico_name}{ext}"
-            )
-            with open(file_name, "wb") as f:
-                f.write(ico.content)
+            save_nav_img(f"{ico_name}{ext}", ico.content)
             logger.info(f"{ico_name}{ext}")
             ico_src = f"/imgs/{ico_name}{ext}"
         else:
@@ -83,6 +88,106 @@ def request_icon_description(navlink_url: str):
     except Exception as e:
         logger.info(f"download site ico {ico_url} failed {e}")
     if not all((ico_src, description)):
-        head = r.html.find("head")[0]
-        logger.info(head.html)
+        heads = r.html.find("head")
+        if heads:
+            head = heads[0]
+            logger.info(head.html)
     return ico_src, description
+
+
+def base64_to_image(url, base64_string):
+    favicon = None
+    base64_tag = "base64,"
+    if url and base64_string and base64_tag in base64_string:
+        index = base64_string.index(base64_tag)
+        _str = base64_string[index + len(base64_tag) :]
+        image_data = base64.b64decode(_str)
+        name = md5(url.encode()).hexdigest() + ".png"
+        try:
+            save_nav_img(name, image_data)
+            favicon = f"/imgs/{name}"
+        except:
+            logger.error(f"save navlink image {url} {base64_string}")
+            favicon = None
+    return favicon
+
+
+def query_bookmark_file(content=None, et=None, tags=None):
+    if content:
+        root = et_html.fromstring(content)
+        et = root.xpath("//body/dl")[0]
+        tags = []
+    for child in et.getchildren():
+        if child.tag == "dt":
+            next_child = child.getchildren()
+            if next_child and next_child[0].tag == "a":
+                link = next_child[0]
+                linkname = link.text if link.text else ""
+                url = link.attrib.get("href", "")
+                icon_attrib: str = link.attrib.get("icon")
+
+                item = (linkname[:50], url[:500], tags)
+                yield item
+                yield from query_bookmark_file(et=child, tags=[*tags])
+        if child.tag == "dl":
+            pre = child.getprevious()
+            pre_child = pre.getchildren()
+            if pre_child and pre_child[0].tag == "h3":
+                subfolder = pre_child[0].text
+                logger.info(f"subfolder {subfolder}")
+                if content:
+                    new_tags = []
+                else:
+                    new_tags = [*tags, subfolder]
+                yield from query_bookmark_file(et=child, tags=new_tags)
+
+
+def navlink_item(linkname, url, created_at):
+    """
+    <DT><A HREF="{url}" ADD_DATE="{date}" LAST_VISIT="{date}"
+    LAST_MODIFIED="{date}">{title}</A>
+    """
+    item_str = f'<DT><A HREF="{url}" ADD_DATE="{created_at}" LAST_VISIT="{created_at}" >{linkname}</A>'
+    return item_str
+
+
+def navlink_subfolder(folder_name, tag_created_at, items):
+    items_str = "\r\n".join(navlink_item(*item) for item in items)
+    return f"""<DT><H3 ADD_DATE="{tag_created_at}" LAST_MODIFIED="{tag_created_at}" >{folder_name}</H3>
+<DL><p>
+    {items_str}
+</DL><p>
+"""
+
+
+def save_to_html(tag_navlinks):
+    """
+    Netscape Bookmark File Format
+    https://learn.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/platform-apis/aa753582(v=vs.85)
+    """
+    body = ""
+    for tag, navlinks in tag_navlinks:
+        tag_name = tag["name"]
+        tag_created_at = tag.get("created_at", datetime.now().timestamp())
+        items = []
+        for navlink in navlinks:
+            url = navlink["url"]
+            linkname = navlink["linkname"]
+            created_at = navlink["created_at"]
+            item = (linkname, url, created_at)
+            items.append(item)
+        folder_str = navlink_subfolder(tag_name, tag_created_at, items)
+        body += folder_str
+    root = f"""<!DOCTYPE NETSCAPE-Bookmark-file-1>
+<!-- This is an automatically generated file.
+     It will be read and overwritten.
+     DO NOT EDIT! -->
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+<TITLE>Bookmarks</TITLE>
+<H1>Bookmarks</H1>
+<DL><p>
+        {body}
+</DL><p>
+"""
+
+    return root

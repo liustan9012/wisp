@@ -88,5 +88,14 @@
   "add": "添加",
   "go back": "返回",
   "default tag": "",
+  "import data": "导入数据",
+  "import navlink": "导入链接",
+  "import": "导入",
+  "dataset": "数据",
+  "bookmarks file": "书签文件",
+  "export navlink": "导出链接",
+  "export conditions": "导出条件",
+  "all": "全部",
+  "export": "导出",
   "Welcome": "欢迎使用 react using react-i18next"
 }

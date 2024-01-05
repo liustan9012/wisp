@@ -159,3 +159,6 @@ class UserOrderBy(str, Enum):
 
 class UserPaginationModel(PaginationModel):
     order_by: UserOrderBy = UserOrderBy.CREATED_AT
+
+class NavlinkStatusModel(BaseModel):
+    status: NavlinkStatus = NavlinkStatus.PUBLISHED

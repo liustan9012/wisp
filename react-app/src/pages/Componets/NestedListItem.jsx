@@ -9,7 +9,7 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import PropTypes from "prop-types";
 import * as React from "react";
-import { NavLink, useMatch } from "react-router-dom";
+import { NavLink, useMatch, useNavigate } from "react-router-dom";
 
 import { styled } from "@mui/material/styles";
 
@@ -30,27 +30,37 @@ export default function NestedListItem({ item, nestedItems }) {
   const handleClick = () => {
     setOpen(!open);
   };
-  return (
-    <>
-      <ListItemButton onClick={handleClick} selected={!!match}>
+  const matchColor = match ? "primary" : "inherit";
+  if (!!!nestedItems)
+    return (
+      <ListItemButton component={Nav} to={item.to} selected={!!match}>
         <ListItemIcon sx={{ minWidth: 40 }}>
-          <item.icon color={match ? "primary" : "inherit"} />
+          <item.icon color={matchColor} />
         </ListItemIcon>
         <ListItemText
           primary={
-            <Typography
-              color={match ? "primary" : "inherit"}
-              sx={{ textTransform: "capitalize" }}
-            >
+            <Typography color={matchColor} sx={{ textTransform: "capitalize" }}>
               {item.text}
             </Typography>
           }
         />
-        {open ? (
-          <ExpandLess fontSize="small" />
-        ) : (
-          <ExpandMore fontSize="small" />
-        )}
+      </ListItemButton>
+    );
+
+  return (
+    <>
+      <ListItemButton onClick={handleClick} selected={!!match}>
+        <ListItemIcon sx={{ minWidth: 40 }}>
+          <item.icon color={matchColor} />
+        </ListItemIcon>
+        <ListItemText
+          primary={
+            <Typography color={matchColor} sx={{ textTransform: "capitalize" }}>
+              {item.text}
+            </Typography>
+          }
+        />
+        {open ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />}
       </ListItemButton>
       <Collapse in={open} timeout="auto" unmountOnExit>
         <List component="div" disablePadding>
@@ -66,10 +76,7 @@ export default function NestedListItem({ item, nestedItems }) {
                   </ListItemIcon>
                   <ListItemText
                     primary={
-                      <Typography
-                        color={isActive ? "primary" : "inherit"}
-                        sx={{ textTransform: "capitalize" }}
-                      >
+                      <Typography color={isActive ? "primary" : "inherit"} sx={{ textTransform: "capitalize" }}>
                         {nested.text}{" "}
                       </Typography>
                     }

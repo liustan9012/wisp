@@ -13,8 +13,13 @@ const Navlink = ({ tag }) => {
     <Grid
       component={Paper}
       item
-
-      sx={{ m: 2,  width: { xs: 150, sm: 180 }, flex: { xs: 1, md: 0 } }}
+      lg={2}
+      sm={3}
+      xs={5}
+      sx={{
+        m: 2,
+        // width: {  lg: 180 }, flex: {  lg: 0 }
+      }}
       elevation={elevation}
       onMouseEnter={(e) => setElevation(8)}
       onMouseLeave={(e) => setElevation(initElevation)}
@@ -36,7 +41,12 @@ const Navlink = ({ tag }) => {
         <Stack direction={"row"} sx={{ alignItems: "center" }}>
           <ImageListItem sx={{ display: "flex", alignItems: "center" }}>
             {favicon ? (
-              <img src={favicon} art="" style={{ width: 32, height: 32 }} />
+              <img
+                src={favicon}
+                art={<Web fontSize="small" color="primary" />}
+                loading="lazy"
+                style={{ maxWidth: 32, maxHeight: 32 }}
+              />
             ) : (
               <Web fontSize="small" color="primary" />
             )}
@@ -47,24 +57,28 @@ const Navlink = ({ tag }) => {
             color={"primary"}
             sx={{
               pl: 1,
-              width: { xs: 150 },
-              overflow: "hidden",
+              width: { xs: 160 },
               fontWeight: "bold",
-              textTransform: "none",
+              overflow: "hidden",
+              textOverflow: "clip",
             }}
           >
             {linkname}
           </Typography>
         </Stack>
-        <Tooltip title={description} enterDelay={1000} enterNextDelay={1000} leaveDelay={200}>
+        <Tooltip
+          title={!!description ? description : linkname}
+          enterDelay={1000}
+          enterNextDelay={1000}
+          leaveDelay={200}
+        >
           <Typography
             variant="body2"
             sx={{
               mt: 1,
               height: 40,
               overflow: "hidden",
-              textOverflow: "ellipsis",
-              textTransform: "none",
+              overflowWrap: "anywhere",
             }}
           >
             {description || ""}

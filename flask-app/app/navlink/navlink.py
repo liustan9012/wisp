@@ -3,7 +3,7 @@ from pathlib import Path
 from flask import current_app, jsonify, request, send_from_directory
 from flask_jwt_extended import current_user, get_current_user, jwt_required
 from loguru import logger
-from sqlalchemy import and_, asc, desc, func
+from sqlalchemy import and_, asc, desc, func, true
 from sqlalchemy.orm import joinedload
 
 from app import db
@@ -16,11 +16,12 @@ from app.models import (
     Tag,
     NavlinkPaginationModel,
     PaginationOrder,
+    NavlinkStatusModel,
 )
 from app.navlink import bp
 from config import basedir
 
-from .utils import request_icon_description
+from .utils import request_icon_description, query_bookmark_file, save_to_html
 
 
 @bp.get("/static/images/<path:path>")
@@ -30,9 +31,20 @@ def static_images(path):
 
 
 @bp.get("/links")
+@jwt_required(optional=True)
 def get_links():
-    navlink_with_tags = Navlink.query.options(joinedload(Navlink.tags)).all()
-
+    user = get_current_user()
+    if user is not None and user.is_admin:
+        criteria = and_(true())
+    else:
+        criteria = and_(true(), Navlink.status == NavlinkStatus.PUBLISHED)
+    navlink_with_tags = (
+        db.session.execute(
+            db.select(Navlink).options(joinedload(Navlink.tags)).where(criteria)
+        )
+        .unique()
+        .scalars()
+    )
     navlinks = {}
     tags = {}
     default_tag = {"id": 0, "name": "default", "navlinks": []}
@@ -155,3 +167,78 @@ def get_navlink(navlink_id):
     if new_navlink is None:
         raise ValidationDBError("the navlink is not exist.")
     return jsonify(navlink=new_navlink.dict(), msg="OK")
+
+
+@bp.post("/navlink/upload")
+@admin_required()
+def upload_navlink():
+    status = NavlinkStatusModel(status=request.form.get("status")).status
+    file = None
+    if "file" not in request.files:
+        file = None
+    file = request.files.get("file")
+    if file is None or file.filename == "":
+        raise ValidationDBError("the file is not correct.")
+    content = file.stream.read()
+    user_id = current_user.id
+    count = {"success": 0, "failure": 0}
+    for linkname, url, tags in query_bookmark_file(content):
+        navlink = Navlink.query.filter(
+            Navlink.url == url, Navlink.user_id == user_id
+        ).first()
+        if navlink is not None:
+            count["failure"] += 1
+            continue
+        favicon, description = request_icon_description(url)
+        if description is not None:
+            description = description[:500]
+        new_navlink = Navlink(
+            linkname=linkname,
+            url=url,
+            favicon=favicon,
+            description=description,
+            user_id=user_id,
+            status=status,
+        )
+        db.session.add(new_navlink)
+        count["success"] += 1
+        if not tags:
+            continue
+        for name in tags:
+            t: Tag = Tag.query.filter(Tag.name == name, Tag.user_id == user_id).first()
+            if t is None:
+                t = Tag(name=name, user_id=user_id)
+                db.session.add(t)
+            new_navlink.tags = [*new_navlink.tags, t]
+    db.session.commit()
+
+    return jsonify(count=count, msg="OK")
+
+
+@bp.post("/navlink/download")
+@admin_required()
+def download_navlink():
+    navlink_with_tags = (
+        db.session.execute(db.select(Navlink).options(joinedload(Navlink.tags)))
+        .unique()
+        .scalars()
+    )
+    navlinks = {}
+    tags = {}
+    default_tag = {"id": 0, "name": "default", "navlinks": []}
+    navlinks["default"] = []
+    tags["default"] = default_tag
+    for navlink in navlink_with_tags:
+        if not navlink.tags:
+            navlinks["default"].append(navlink.dict())
+        for tag in navlink.tags:
+            tag_name = tag.name
+            if tag_name not in navlinks:
+                navlinks[tag_name] = []
+                tags[tag_name] = tag.dict()
+            navlinks[tag_name].append(navlink.dict())
+    tag_navlinks = [[tags[tag_name], navlinks[tag_name]] for tag_name in tags]
+    html_data = save_to_html(tag_navlinks)
+
+    # return jsonify(tag_navlinks=tag_navlinks, msg="OK")
+    return html_data

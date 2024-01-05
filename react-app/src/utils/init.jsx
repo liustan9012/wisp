@@ -6,4 +6,3 @@ export const INITUSER =
         password: "admin123",
       }
     : { username: "", email: "", password: "" };
-console.log(import.meta.env);

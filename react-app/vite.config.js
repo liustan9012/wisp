@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import path from "path";
-import { splitVendorChunkPlugin } from "vite";
+// import { splitVendorChunkPlugin } from "vite";
 
 import { visualizer } from "rollup-plugin-visualizer";
 
@@ -26,6 +26,7 @@ export default defineConfig({
   },
   plugins: [
     react(),
+    // nodeResolve(),
     visualizer({
       template: "treemap", // or sunburst
       open: true,
@@ -33,6 +34,20 @@ export default defineConfig({
       brotliSize: true,
       filename: "analyse.html", // will be saved in project's root
     }),
-    splitVendorChunkPlugin(),
+    // splitVendorChunkPlugin(),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          // if (id.includes("refractor")) {
+          //   return "refractor";
+          // }
+          // if (id.includes("Dashboard")) {
+          //   return "admin";
+          // }
+        },
+      },
+    },
+  },
 });

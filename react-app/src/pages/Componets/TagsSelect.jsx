@@ -16,7 +16,7 @@ function TagsComponent({ isLoading, ChangeTags, reqUserTags }) {
   const tag = useSelector((state) => state.tag);
   const [open, setOpen] = React.useState(false);
   return (
-    <Stack>
+    <>
       <Autocomplete
         multiple
         disableCloseOnSelect
@@ -27,6 +27,7 @@ function TagsComponent({ isLoading, ChangeTags, reqUserTags }) {
         value={tag?.selectTags || []}
         loading={isLoading}
         open={open}
+        fullWidth
         onOpen={() => {
           setOpen(true);
           reqUserTags();
@@ -54,7 +55,7 @@ function TagsComponent({ isLoading, ChangeTags, reqUserTags }) {
           />
         )}
       />
-    </Stack>
+    </>
   );
 }
 
@@ -64,7 +65,7 @@ TagsComponent.propTypes = {
   reqUserTags: PropTypes.func,
 };
 
-export default function TagsSelect() {
+export default function TagsSelect(props) {
   const dispatch = useDispatch();
   const { isLoading, refetch } = useGetTagsQuery();
 
@@ -80,5 +81,9 @@ export default function TagsSelect() {
     dispatch(setSelectTags({ selectTags: value }));
   };
 
-  return <TagsComponent {...{ isLoading, ChangeTags, reqUserTags }} />;
+  return (
+    <Stack {...props}>
+      <TagsComponent {...{ isLoading, ChangeTags, reqUserTags }} />
+    </Stack>
+  );
 }

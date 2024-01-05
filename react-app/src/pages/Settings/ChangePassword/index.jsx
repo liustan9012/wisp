@@ -43,16 +43,16 @@ export default function ChangePassword() {
   };
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Stack direction={"row"} spacing={2} sx={{ mb: 2, alignItems: "center" }}>
+    <Box sx={{ p: 2 }}>
+      <Stack direction={"row"} spacing={2} sx={{ mb: 1, alignItems: "center" }}>
         <LockOutlinedIcon color={"primary"} />
-        <Typography component="h1" variant="h5">
-          {t("Chang password")}
+        <Typography component="h1" variant="h5" sx={{textTransform: "capitalize" }}>
+          {t("chang password")}
         </Typography>
       </Stack>
       <Divider />
-      <Box component="form" noValidate sx={{ mt: 4 }}>
-        <Grid container spacing={2} sx={{ maxWidth: 500 }}>
+      <Box component="form" noValidate sx={{ mt: 2 }}>
+        <Grid container spacing={1} sx={{ maxWidth: 500 }}>
           <Grid item xs={12}>
             <TextField
               autoComplete="username"
@@ -61,8 +61,8 @@ export default function ChangePassword() {
               fullWidth
               id="username"
               label={t("user name")}
-              autoFocus
               value={username}
+              size={"small"}
               onChange={(e) => setUsername(e.target.value)}
             />
           </Grid>
@@ -76,6 +76,7 @@ export default function ChangePassword() {
               id="password1"
               autoComplete="password1"
               value={password1}
+              size={"small"}
               onChange={(e) => setPassword1(e.target.value)}
             />
           </Grid>
@@ -89,19 +90,22 @@ export default function ChangePassword() {
               id="password2"
               autoComplete="password2"
               value={password2}
+              size={"small"}
               onChange={(e) => setPassword2(e.target.value)}
             />
           </Grid>
+          <Grid item xs={12}>
+            <Typography variant="subtitle1" sx={{ color: theme.palette.error.main }} gutterBottom>
+              {error ? error : ""}
+            </Typography>
+          </Grid>
+          <Grid item xs={12}>
+            <Button type="submit" variant="contained" onClick={handleSubmit}>
+              {t("chang password")}
+            </Button>
+          </Grid>
         </Grid>
-        <Typography variant="subtitle1" sx={{ color: theme.palette.error.main }} gutterBottom>
-          {error ? error : ""}
-        </Typography>
       </Box>
-      <Stack direction={"row-reverse"} sx={{ mt: 2 }}>
-        <Button type="submit" variant="contained" onClick={handleSubmit}>
-          {t("Chang password")}
-        </Button>
-      </Stack>
     </Box>
   );
 }
