@@ -23,6 +23,8 @@ export const tagsSlice = createSlice({
 // Action creators are generated for each case reducer function
 export const { setUserTags, newTag, setSelectTags } = tagsSlice.actions;
 
+export const selectCurrentTag = (state) => state.tag;
+
 export default tagsSlice.reducer;
 
 // export const selectCurrentAuth = (state) => state.auth

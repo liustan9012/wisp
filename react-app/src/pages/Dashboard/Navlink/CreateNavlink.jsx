@@ -19,6 +19,7 @@ import { AddLink } from "@mui/icons-material";
 import { useCreateNavlinkMutation, useReqNavlinkQuery, useUpdateNavlinkMutation } from "../../../api/navlink";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
+import { useForm, Controller } from "react-hook-form";
 
 import TagsSelect from "../../Componets/TagsSelect";
 import { setSelectTags } from "../../Componets/tagSlice";
@@ -29,44 +30,60 @@ const PRIVATE = "PRIVATE";
 const DELETE = "DELETE";
 
 export const Navlink = ({ navlink, handleSucess }) => {
-  const initNavlink = { status: PUBLISHED, ...navlink };
   const { t } = useTranslation();
-
-  const [newNavlink, setNewNavlink] = useState(initNavlink);
+  const defaultValues = {
+    linkname: "",
+    url: "",
+    favicon: "",
+    shortstr: "",
+    order: 0,
+    status: PUBLISHED,
+    description: "",
+    ...navlink,
+  };
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    watch,
+    formState: { errors },
+  } = useForm({
+    defaultValues,
+  });
+  useEffect(() => {
+    reset({ ...defaultValues });
+  }, [navlink]);
   const [snackBarOption, setSnackBarOption] = useState({
     open: false,
     message: "",
   });
-  const [error, setError] = useState({});
+  const [error, setError] = useState("");
   const [createNavlink, createNavlinkResult] = useCreateNavlinkMutation();
   const [updateNavlink, updateNavlinkResult] = useUpdateNavlinkMutation();
-  const navlinkId = newNavlink?.id;
+  const navlinkId = navlink?.id;
 
   const tag = useSelector((state) => state.tag);
 
-  const handleNavlink = (nav) => {
-    setNewNavlink({ ...newNavlink, ...nav });
-  };
-
-  const handleCreateNavlink = async () => {
-    let data;
-    const newNav = { ...newNavlink };
+  const onSubmit = async (data) => {
+    const newNav = { ...data };
     newNav.tags = tag.selectTags;
+    let response;
     if (navlinkId) {
-      data = await updateNavlink({
+      response = await updateNavlink({
         navlinkId,
         navlink: { ...newNav },
       }).unwrap();
     } else {
-      data = await createNavlink({ ...newNav }).unwrap();
+      response = await createNavlink({ ...newNav }).unwrap();
     }
-    if (data?.msg === "OK") {
+    if (response?.msg === "OK") {
       setError(null);
       if (!!handleSucess) {
-        handleSucess(data);
+        handleSucess(response);
       }
-    } else if (data?.msg === "error") {
-      setError(data.error);
+    } else if (response?.msg === "error") {
+      setError(response.error);
     }
   };
   return (
@@ -96,8 +113,13 @@ export const Navlink = ({ navlink, handleSucess }) => {
                 fullWidth
                 autoFocus
                 variant="filled"
-                value={newNavlink?.linkname || ""}
-                onChange={(e) => handleNavlink({ linkname: e.target.value })}
+                error={!!errors.linkname}
+                {...register("linkname", {
+                  required: true,
+                  minLength: { value: 1, message: t("minLength error", { name: t("linkname"), length: 1 }) },
+                  maxLength: { value: 50, message: t("maxLength error", { name: t("linkname"), length: 50 }) },
+                })}
+                helperText={!!errors.linkname && errors.linkname.message}
               />
             </Grid>
             <Grid item xs={12}>
@@ -107,8 +129,13 @@ export const Navlink = ({ navlink, handleSucess }) => {
                 required
                 fullWidth
                 variant="filled"
-                value={newNavlink?.url || ""}
-                onChange={(e) => handleNavlink({ url: e.target.value })}
+                error={!!errors.url}
+                {...register("url", {
+                  required: true,
+                  minLength: { value: 1, message: t("minLength error", { name: t("url"), length: 1 }) },
+                  maxLength: { value: 500, message: t("maxLength error", { name: t("url"), length: 500 }) },
+                })}
+                helperText={!!errors.url && errors.url.message}
               />
             </Grid>
             <Grid item xs={12}>
@@ -116,41 +143,48 @@ export const Navlink = ({ navlink, handleSucess }) => {
                 name="favicon"
                 label={t("favicon")}
                 fullWidth
-                value={newNavlink?.favicon || ""}
-                onChange={(e) => handleNavlink({ favicon: e.target.value })}
+                error={!!errors.favicon}
+                {...register("favicon", {
+                  maxLength: { value: 500, message: t("maxLength error", { name: t("favicon"), length: 500 }) },
+                })}
+                helperText={!!errors.favicon && errors.favicon.message}
               />
             </Grid>
             <Grid item xs={12}>
-              <Stack direction={"row"} spacing={4} sx={{ justifyContent: "space-between", alignItems: "center" }}>
+              <Stack direction={"row"} spacing={2} sx={{ justifyContent: "space-between", alignItems: "center" }}>
                 <TextField
                   name="shortstr"
                   label={t("shortstr")}
-                  sx={{ width: 120 }}
-                  value={newNavlink?.shortstr || ""}
-                  onChange={(e) => handleNavlink({ shortstr: e.target.value })}
+                  error={!!errors.shortstr}
+                  {...register("shortstr", {
+                    maxLength: { value: 50, message: t("maxLength error", { name: t("shortstr"), length: 50 }) },
+                  })}
+                  helperText={!!errors.shortstr && errors.shortstr.message}
                 />
                 <TextField
                   name="order"
                   label={t("order")}
                   type="number"
                   sx={{ width: 80 }}
-                  value={newNavlink?.order || 0}
-                  onChange={(e) => handleNavlink({ order: e.target.value })}
+                  error={!!errors.order}
+                  {...register("order", {
+                    maxLength: { max: 10000, message: t("max value error", { name: t("order"), value: 10000 }) },
+                  })}
+                  helperText={!!errors.order && errors.order.message}
                 />
-                <FormControl>
+                <FormControl sx={{ width: 120 }}>
                   <InputLabel id="select-status-label">{t("status")}</InputLabel>
-                  <Select
-                    labelId="select-status-label"
-                    id="select-status"
-                    value={newNavlink.status || PUBLISHED}
-                    label={t("status")}
-                    sx={{ width: 120 }}
-                    onChange={(e) => handleNavlink({ status: e.target.value })}
-                  >
-                    <MenuItem value={PUBLISHED}>{t("published")}</MenuItem>
-                    <MenuItem value={PRIVATE}>{t("private")}</MenuItem>
-                    <MenuItem value={DELETE}>{t("delete")}</MenuItem>
-                  </Select>
+                  <Controller
+                    name="status"
+                    control={control}
+                    render={({ field }) => (
+                      <Select {...field} labelId="select-status-label" id="select-status" label={t("status")}>
+                        <MenuItem value={PUBLISHED}>{t("published")}</MenuItem>
+                        <MenuItem value={PRIVATE}>{t("private")}</MenuItem>
+                        <MenuItem value={DELETE}>{t("delete")}</MenuItem>
+                      </Select>
+                    )}
+                  />
                 </FormControl>
               </Stack>
             </Grid>
@@ -163,15 +197,16 @@ export const Navlink = ({ navlink, handleSucess }) => {
                 label={t("description")}
                 multiline
                 rows={5}
-                // minRows={4}
-                // maxRows={8}
                 fullWidth
-                value={newNavlink?.description || ""}
-                onChange={(e) => handleNavlink({ description: e.target.value })}
+                error={!!errors.description}
+                {...register("description", {
+                  maxLength: { value: 500, message: t("maxLength error", { name: t("description"), length: 500 }) },
+                })}
+                helperText={!!errors.description && errors.description.message}
               />
             </Grid>
             <Grid item xs={12}>
-              <Button variant="contained" fullWidth onClick={handleCreateNavlink}>
+              <Button variant="contained" fullWidth onClick={handleSubmit(onSubmit)}>
                 {navlinkId !== undefined ? t("update") : t("create")}
               </Button>
             </Grid>
@@ -190,11 +225,12 @@ export const Navlink = ({ navlink, handleSucess }) => {
 
 const CreateNavlink = () => {
   const { navlinkId } = useParams();
+  const { t } = useTranslation();
   const { data, isFetching } = useReqNavlinkQuery(navlinkId, {
     skip: !!!navlinkId,
     refetchOnMountOrArgChange: true,
   });
-  const navlink = data?.navlink || {};
+  const navlink = !!navlinkId ? data?.navlink : {};
   const tags = navlink?.tags || [];
   const dispatch = useDispatch();
 
@@ -203,13 +239,13 @@ const CreateNavlink = () => {
 
   useEffect(() => {
     dispatch(setSelectTags({ selectTags: tags }));
-  }, [data]);
+  }, [navlink]);
   const handleSucess = (data) => {
     const from = location.state?.from?.pathname;
     const search = location.state?.from?.search;
     navigate(!!from ? `${from}${search}` : `/admin/navlink/list`);
   };
-  if (isFetching) return <Typography>Loading...</Typography>;
+  if (isFetching) return <Typography>{t("Loading...")}</Typography>;
   return <Navlink {...{ navlink, handleSucess }} />;
 };
 

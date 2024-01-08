@@ -88,7 +88,6 @@ const ImportNavlink = () => {
           >
             <MenuItem value={PUBLISHED}>{t("published")}</MenuItem>
             <MenuItem value={PRIVATE}>{t("private")}</MenuItem>
-            <MenuItem value={DELETE}>{t("delete")}</MenuItem>
           </Select>
         </Stack>
         <Button

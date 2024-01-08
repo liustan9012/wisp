@@ -8,13 +8,17 @@ import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useGetTagQuery, useNewTagMutation, useUpdateTagMutation } from "../../../api/tag";
-import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
-import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useForm } from "react-hook-form";
 
 function TagComponet({ tag }) {
   const { t } = useTranslation();
   const [name, setName] = useState(tag?.name || "");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
   const [error, setError] = useState("");
   const [updateTag] = useUpdateTagMutation();
   const [newTag] = useNewTagMutation();
@@ -22,22 +26,21 @@ function TagComponet({ tag }) {
   const location = useLocation();
   const isUpdated = !!tag?.id;
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     try {
-      let data;
+      let response;
       if (isUpdated) {
-        data = await updateTag({ tagId: tag?.id, name }).unwrap();
+        response = await updateTag({ ...data, tagId: tag?.id,  }).unwrap();
       } else {
-        data = await newTag({ name }).unwrap();
+        response = await newTag({ ...data }).unwrap();
       }
-      if (data?.msg === "OK") {
+      if (response?.msg === "OK") {
         setError("");
         const from = location.state?.from?.pathname;
         const search = location.state?.from?.search;
         navigate(!!from ? `${from}${search}` : `/admin/tag/list`);
-      } else if (data?.msg === "error") {
-        setError(data.error);
+      } else if (response?.msg === "error") {
+        setError(response.error);
       }
     } catch (error) {
       console.error(error);
@@ -71,15 +74,20 @@ function TagComponet({ tag }) {
               id="name"
               label={t("name")}
               autoFocus
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              error={!!errors.name}
+              {...register("name", {
+                required: true,
+                minLength: { value: 1, message: t("minLength error", { name: t("name"), length: 1 }) },
+                maxLength: { value: 50, message: t("maxLength error", { name: t("name"), length: 50 }) },
+              })}
+              helperText={!!errors.name && errors.name.message}
             />
           </Grid>
         </Grid>
         <Typography variant="subtitle1" color="error.main" gutterBottom>
           {error ? error : ""}
         </Typography>
-        <Button type="submit" fullWidth variant="contained" sx={{ mt: 5, mb: 2 }} onClick={handleSubmit}>
+        <Button type="submit" fullWidth variant="contained" sx={{ mt: 5, mb: 2 }} onClick={handleSubmit(onSubmit)}>
           {isUpdated ? t(`update`) : t(`create`)}
         </Button>
       </Box>

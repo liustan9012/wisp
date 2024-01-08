@@ -1,10 +1,12 @@
 from pathlib import Path
+from collections import defaultdict
+import concurrent.futures
 
 from flask import current_app, jsonify, request, send_from_directory
 from flask_jwt_extended import current_user, get_current_user, jwt_required
 from loguru import logger
 from sqlalchemy import and_, asc, desc, func, true
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, contains_eager
 
 from app import db
 from app.auth import admin_required
@@ -17,6 +19,7 @@ from app.models import (
     NavlinkPaginationModel,
     PaginationOrder,
     NavlinkStatusModel,
+    DownloadNavlinkModel,
 )
 from app.navlink import bp
 from config import basedir
@@ -105,7 +108,9 @@ def create_navlink():
     new_navlink = Navlink(user_id=user_id, **data)
 
     if not (req.description and req.favicon):
-        icon, description = request_icon_description(new_navlink.url)
+        icon, description = request_icon_description(
+            new_navlink.url, current_app.config["NAVICONPATH"]
+        )
         new_navlink.favicon = req.favicon if req.favicon else icon
         new_navlink.description = req.description if req.description else description
     if navlink_tags:
@@ -152,7 +157,9 @@ def update_navlink(navlink_id):
 
     new_navlink.update(**data)
     if not (req.description and req.favicon):
-        icon, description = request_icon_description(new_navlink.url)
+        icon, description = request_icon_description(
+            new_navlink.url, current_app.config["NAVICONPATH"]
+        )
         new_navlink.favicon = req.favicon if req.favicon else icon
         new_navlink.description = req.description if req.description else description
     db.session.add(new_navlink)
@@ -179,9 +186,15 @@ def upload_navlink():
     file = request.files.get("file")
     if file is None or file.filename == "":
         raise ValidationDBError("the file is not correct.")
-    content = file.stream.read()
+    content = file.stream.read().decode("utf-8")
     user_id = current_user.id
-    count = {"success": 0, "failure": 0}
+    count = defaultdict(int)
+    count["success"] = 0
+    count["failure"] = 0
+    success_navlink = {}
+    new_tags = defaultdict(str)
+    icon_descriptions = {}
+    nav_path = current_app.config["NAVICONPATH"]
     for linkname, url, tags in query_bookmark_file(content):
         navlink = Navlink.query.filter(
             Navlink.url == url, Navlink.user_id == user_id
@@ -189,27 +202,40 @@ def upload_navlink():
         if navlink is not None:
             count["failure"] += 1
             continue
-        favicon, description = request_icon_description(url)
-        if description is not None:
-            description = description[:500]
+        icon_descriptions[url] = url
         new_navlink = Navlink(
-            linkname=linkname,
-            url=url,
-            favicon=favicon,
-            description=description,
-            user_id=user_id,
-            status=status,
+            linkname=linkname, url=url, user_id=user_id, status=status
         )
-        db.session.add(new_navlink)
+        success_navlink[url] = new_navlink
         count["success"] += 1
-        if not tags:
-            continue
         for name in tags:
-            t: Tag = Tag.query.filter(Tag.name == name, Tag.user_id == user_id).first()
-            if t is None:
-                t = Tag(name=name, user_id=user_id)
-                db.session.add(t)
+            if name in new_tags:
+                t = new_tags[name]
+            else:
+                t: Tag = Tag.query.filter(
+                    Tag.name == name, Tag.user_id == user_id
+                ).first()
+                if t is None:
+                    t = Tag(name=name, user_id=user_id)
+            new_tags[name] = t
             new_navlink.tags = [*new_navlink.tags, t]
+    futures = {}
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        for url in icon_descriptions:
+            _future = executor.submit(request_icon_description, url, nav_path)
+            futures[_future] = url
+        for future in concurrent.futures.as_completed(futures):
+            _url = futures[future]
+            navlink: Navlink = success_navlink[_url]
+            data = future.result()
+            favicon, description = data
+            logger.info(data)
+            if favicon:
+                navlink.favicon = favicon
+            if description:
+                navlink.description = description[:500]
+    for navlink in success_navlink.values():
+        db.session.add(navlink)
     db.session.commit()
 
     return jsonify(count=count, msg="OK")
@@ -218,8 +244,21 @@ def upload_navlink():
 @bp.post("/navlink/download")
 @admin_required()
 def download_navlink():
+    req = DownloadNavlinkModel(**request.json)
+    logger.info((req.tags, req.status))
+    criteria = true()
+    if req.tags:
+        criteria = and_(criteria, Tag.id.in_([t.id for t in req.tags]))
+    if req.status:
+        criteria = and_(criteria, Navlink.status == req.status)
+
     navlink_with_tags = (
-        db.session.execute(db.select(Navlink).options(joinedload(Navlink.tags)))
+        db.session.execute(
+            db.select(Navlink)
+            .outerjoin(Navlink.tags)
+            .options(contains_eager(Navlink.tags))
+            .filter(criteria)
+        )
         .unique()
         .scalars()
     )
@@ -239,6 +278,4 @@ def download_navlink():
             navlinks[tag_name].append(navlink.dict())
     tag_navlinks = [[tags[tag_name], navlinks[tag_name]] for tag_name in tags]
     html_data = save_to_html(tag_navlinks)
-
-    # return jsonify(tag_navlinks=tag_navlinks, msg="OK")
     return html_data

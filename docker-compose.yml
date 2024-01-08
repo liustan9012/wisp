@@ -11,7 +11,6 @@ services:
       - ./flask-app/instance:/app/flask-app/instance
       - ./flask-app/static/images:/app/flask-app/static/images
     environment:
-      # - DATABASE_URL=mysql://wisp:wisp@db:3306/wisp?charset=utf8mb4
       - DATABASE_URL=sqlite:///wisp.db
       - JWT_SECRET_KEY=you-secret-key
       - ADMIN_USERNAME=admin
@@ -28,16 +27,3 @@ services:
       - ./flask-app/static/images:/var/www/static/images
     depends_on:
       - flask-app
-
-  # db:
-  #   image: mysql:latest
-  #   container_name: database
-  #   restart: always
-  #   environment:
-  #     MYSQL_DATABASE: wisp
-  #     MYSQL_USER: wisp
-  #     MYSQL_PASSWORD: wisp
-  #     MYSQL_ROOT_PASSWORD: 'root'
-  #   ports:
-  #     - "3316:3306"
-  

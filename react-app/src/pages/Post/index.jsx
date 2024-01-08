@@ -1,4 +1,4 @@
-import React, {lazy, Suspense} from "react";
+import React, { lazy, Suspense } from "react";
 import { useParams } from "react-router-dom";
 import { Typography, Paper, Stack, Chip, Divider, Box } from "@mui/material";
 
@@ -10,8 +10,6 @@ import { useSelector } from "react-redux";
 import { selectCurrentAuth } from "../../api/authSlice";
 import { useTranslation } from "react-i18next";
 import { MarkdownPreview } from "../Componets/MDEditor";
-
-
 
 export default function Post() {
   const { t } = useTranslation();

@@ -8,6 +8,14 @@ const dataapi = baseApi.injectEndpoints({
         method: "post",
         body: formData,
       }),
+    }),
+    downloadNavlink: build.mutation({
+      query: (downloadParams) => ({
+        url: `/navlink/download`,
+        method: "post",
+        body: downloadParams,
+        responseHandler: (response) => response.text(),
+      }),
       //   invalidatesTags: ["NavlinkList"],
     }),
 
@@ -15,8 +23,6 @@ const dataapi = baseApi.injectEndpoints({
   }),
 });
 
-
-
-export const { useUploadNavlinkMutation } = dataapi;
+export const { useUploadNavlinkMutation, useDownloadNavlinkMutation } = dataapi;
 
 export default dataapi;

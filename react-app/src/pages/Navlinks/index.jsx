@@ -33,7 +33,7 @@ import LanguageToggle from "../Componets/LanguageTogole";
 const scrollToElement = ({ elementId, offset }) => {
   const element = document.getElementById(elementId);
   const elementToTop = element?.getBoundingClientRect().top || 0;
-  const offsetTop = elementToTop + window.scrollY + offset;
+  let offsetTop = elementToTop + window.scrollY + offset;
   window.scrollTo({
     top: offsetTop,
     behavior: "smooth",
@@ -45,7 +45,11 @@ const SideBar = ({ tags }) => {
   const { t } = useTranslation();
 
   const handleClickMenu = ({ tag }) => {
-    scrollToElement({ elementId: tag.name, offset: -75 });
+    let offset = -75;
+    if (tag.name === "default") {
+      offset += -160;
+    }
+    scrollToElement({ elementId: tag.name, offset });
     setSelected(tag.id);
   };
   return (
@@ -57,18 +61,17 @@ const SideBar = ({ tags }) => {
     >
       <Link
         component={RouterLink}
-        to="/"
+        to="/navlink"
         underline="none"
         color={"inherit"}
         variant="h6"
         sx={{
           p: 2,
           pl: 8,
-          // pr: 4,
           textTransform: "capitalize",
         }}
       >
-        {t("home")}
+        {t("navlink")}
       </Link>
       {tags.map((tag) => {
         return (
@@ -226,6 +229,9 @@ const Navlinks = (props) => {
             <Typography sx={{ flexGrow: 1 }} align="center"></Typography>
             <Box sx={{ flexGrow: 0, pr: 2 }}>
               <Stack direction={"row"} spacing={1} sx={{ alignItems: "center" }}>
+                <Button component={RouterLink} to="/" underline="none">
+                  <Typography variant="button">{t("home")}</Typography>
+                </Button>
                 <LanguageToggle color="primary" />
                 <LightModeToggle color="primary" />
                 <UserAvatar

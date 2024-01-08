@@ -49,7 +49,7 @@ class ChangePasswordModel(BaseModel):
 
 class TagModel(BaseModel):
     user_id: int
-    name: constr(max_length=100, min_length=1)
+    name: constr(max_length=50, min_length=1)
 
 
 class Tag(TagModel):
@@ -59,12 +59,8 @@ class Tag(TagModel):
 class PostModel(BaseModel):
     title: constr(max_length=100, min_length=4)
     slug: Optional[constr(max_length=50)]
-    summary: Optional[
-        constr(
-            max_length=200,
-        )
-    ]
-    content: constr(min_length=4)
+    summary: Optional[constr(max_length=200)]
+    content: constr(min_length=4, max_length=50000)
     status: PostStatus = PostStatus.DRAFT
     enable_comment: EnableComment = EnableComment.DISABLE
     tags: list[Tag] = []
@@ -160,5 +156,11 @@ class UserOrderBy(str, Enum):
 class UserPaginationModel(PaginationModel):
     order_by: UserOrderBy = UserOrderBy.CREATED_AT
 
+
 class NavlinkStatusModel(BaseModel):
     status: NavlinkStatus = NavlinkStatus.PUBLISHED
+
+
+class DownloadNavlinkModel(BaseModel):
+    status: Optional[NavlinkStatus]
+    tags: list[Tag] = []

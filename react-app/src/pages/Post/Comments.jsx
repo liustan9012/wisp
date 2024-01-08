@@ -1,14 +1,4 @@
-import {
-  Box,
-  Button,
-  CardContent,
-  CardHeader,
-  Divider,
-  Link,
-  Stack,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Box, Button, CardContent, CardHeader, Divider, Link, Stack, TextField, Typography } from "@mui/material";
 import React, { useState } from "react";
 import { Link as RouteLink, useLocation, useParams } from "react-router-dom";
 
@@ -19,12 +9,18 @@ import { useNewCommentMutation } from "../../api/comment";
 import StringAvatar from "../../Componets/StringAvatar";
 import { timeConverter } from "../../utils/datetime";
 import { useTranslation } from "react-i18next";
+import { useForm } from "react-hook-form";
 
 export default function CommentList({ comments }) {
-  const {t} = useTranslation()
+  const { t } = useTranslation();
   const comment = useSelector((state) => state.comment);
-  const [content, setContent] = useState(comment.newComment || "");
-  const [errorMsg, setErrorMsg] = useState("");
+  const {
+    register,
+    handleSubmit,
+    setError,
+    setValue,
+    formState: { errors },
+  } = useForm({ defaultValues: { content: "" } });
   const { postId } = useParams();
   const location = useLocation();
 
@@ -32,20 +28,16 @@ export default function CommentList({ comments }) {
 
   const auth = useSelector(selectCurrentAuth);
 
-  const handleContent = (e) => {
-    setContent(e.target.value);
-  };
-
-  const handleReply = async () => {
-    setErrorMsg("");
-    const data = await newComment({
-      content,
+  const handleReply = async (data) => {
+    console.log(data);
+    const response = await newComment({
+      content: data.content,
       postId,
     }).unwrap();
-    if (data?.msg !== "OK") {
-      setErrorMsg(data.error);
+    if (response?.msg !== "OK") {
+      setError("content", { type: "server", message: response.error });
     } else {
-      setContent("");
+      setValue("content", "");
     }
   };
   return (
@@ -58,16 +50,11 @@ export default function CommentList({ comments }) {
               sx={{ p: 1 }}
               title={
                 <Stack direction={"row"} alignItems="center">
-                  <StringAvatar
-                    name={c.username}
-                    alt={c.username}
-                  ></StringAvatar>
+                  <StringAvatar name={c.username} alt={c.username}></StringAvatar>
                   <Typography variant="h6" sx={{ pl: 1 }}>
                     {c.username}{" "}
                   </Typography>
-                  <Typography sx={{ ml: 2, pb: 0 }}>
-                    {timeConverter(c.created_at)}
-                  </Typography>
+                  <Typography sx={{ ml: 2, pb: 0 }}>{timeConverter(c.created_at)}</Typography>
                 </Stack>
               }
             />
@@ -87,35 +74,29 @@ export default function CommentList({ comments }) {
         multiline
         fullWidth
         rows={4}
-        value={content}
-        onChange={handleContent}
         sx={{ mt: 1 }}
-        error={!!errorMsg}
-        helperText={errorMsg}
+        error={!!errors.content}
+        {...register("content", {
+          required: true,
+          minLength: { value: 4, message: t("minLength error", { name: t("comment"), length: 4 }) },
+          maxLength: { value: 1000, message: t("maxLength error", { name: t("comment"), length: 1000 }) },
+        })}
+        helperText={!!errors.content && errors.content?.message}
       />
       <Stack direction="row">
         {!auth.username ? (
           <Stack direction={"row"} alignItems="stretch" sx={{ mt: 2 }}>
-            <Link
-              to="/signin"
-              state={{ from: location }}
-              underline="none"
-              variant="h6"
-              component={RouteLink}
-            >
+            <Link to="/signin" state={{ from: location }} underline="none" variant="h6" component={RouteLink}>
               {t("signin")}
             </Link>
-            <Button
-              sx={{ ml: 1 }}
-              variant="outlined"
-              onClick={handleReply}
-              disabled
-            >
+            <Button sx={{ ml: 1 }} variant="outlined" onClick={handleSubmit(handleReply)} disabled>
               {t("reply")}
             </Button>
           </Stack>
         ) : (
-          <Button onClick={handleReply} variant="outlined" sx={{mt:2}} >{t("reply")}</Button>
+          <Button onClick={handleSubmit(handleReply)} variant="outlined" sx={{ mt: 2 }}>
+            {t("reply")}
+          </Button>
         )}
       </Stack>
     </Box>

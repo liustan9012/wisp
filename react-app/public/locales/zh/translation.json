@@ -97,5 +97,9 @@
   "export conditions": "导出条件",
   "all": "全部",
   "export": "导出",
+  "minLength error": "{{name}} 最少 {{length}} 个字符 .",
+  "maxLength error": "{{name}} 最多 {{length}} 个字符 .",
+  "email error pattern": "邮箱格式错误",
+  "password error match": "确认密码是否一致",
   "Welcome": "欢迎使用 react using react-i18next"
 }

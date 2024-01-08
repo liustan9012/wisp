@@ -9,6 +9,7 @@ import Typography from "@mui/material/Typography";
 import { useTheme } from "@mui/material/styles";
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
 
 import { useSignUpMutation } from "../../../api/auth";
 import { useTranslation } from "react-i18next";
@@ -16,28 +17,28 @@ import { useTranslation } from "react-i18next";
 export default function CreateUser() {
   const [signUp] = useSignUpMutation();
   const { t } = useTranslation();
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password1, setPassword1] = useState("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
   const [error, setError] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
+    console.log(data);
     try {
-      const data = await signUp({
-        username,
-        email,
-        password1,
-        password2: password1,
+      const response = await signUp({
+        ...data,
+        password2: data.password1,
       }).unwrap();
-      if (data.msg === "OK") {
+      if (response.msg === "OK") {
         const from = location.state?.from?.pathname || "/admin/user/list";
         navigate(from, { replace: true });
       } else {
-        setError(data.error);
+        setError(response.error);
       }
     } catch (error) {
       console.error(error);
@@ -57,11 +58,7 @@ export default function CreateUser() {
         <Avatar sx={{ m: 1, bgcolor: "secondary.main" }}>
           <LockOutlinedIcon />
         </Avatar>
-        <Typography
-          component="h1"
-          variant="h5"
-          sx={{ textTransform: "capitalize" }}
-        >
+        <Typography component="h1" variant="h5" sx={{ textTransform: "capitalize" }}>
           {t("create user")}
         </Typography>
         <Box component="form" noValidate sx={{ mt: 3 }}>
@@ -75,8 +72,13 @@ export default function CreateUser() {
                 id="username"
                 label={t("user name")}
                 autoFocus
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                error={!!errors.username}
+                {...register("username", {
+                  required: true,
+                  minLength: { value: 4, message: t("minLength error", { name: t("user name"), length: 4 }) },
+                  maxLength: { value: 20, message: t("maxLength error", { name: t("user name"), length: 20 }) },
+                })}
+                helperText={!!errors.username && errors.username.message}
               />
             </Grid>
             <Grid item xs={12}>
@@ -87,8 +89,17 @@ export default function CreateUser() {
                 label={t("email address")}
                 name="email"
                 autoComplete="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                error={!!errors.email}
+                {...register("email", {
+                  required: true,
+                  maxLength: { value: 30, message: "email should be at most 30 characters." },
+                  pattern: {
+                    value:
+                      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+                    message: t("email error pattern"),
+                  },
+                })}
+                helperText={!!errors.email && errors.email.message}
               />
             </Grid>
             <Grid item xs={12}>
@@ -99,26 +110,21 @@ export default function CreateUser() {
                 label={t("password")}
                 type="password"
                 id="password1"
-                autoComplete="password1"
-                value={password1}
-                onChange={(e) => setPassword1(e.target.value)}
+                autoComplete="new-password"
+                error={!!errors.password1}
+                {...register("password1", {
+                  required: true,
+                  minLength: { value: 6, message: t("minLength error", { name: t("password"), length: 6 }) },
+                  maxLength: { value: 20, message: t("maxLength error", { name: t("password"), length: 20 }) },
+                })}
+                helperText={!!errors.password1 && errors.password1.message}
               />
             </Grid>
           </Grid>
-          <Typography
-            variant="subtitle1"
-            sx={{ color: theme.palette.error.main }}
-            gutterBottom
-          >
+          <Typography variant="subtitle1" sx={{ color: theme.palette.error.main }} gutterBottom>
             {error ? error : ""}
           </Typography>
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            sx={{ mt: 3, mb: 2 }}
-            onClick={handleSubmit}
-          >
+          <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }} onClick={handleSubmit(onSubmit)}>
             {t("create")}
           </Button>
         </Box>

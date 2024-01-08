@@ -10,6 +10,7 @@ import Grid from "@mui/material/Grid";
 import { useTheme } from "@mui/material/styles";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useDispatch, useSelector } from "react-redux";
+import { useForm, Controller, useWatch } from "react-hook-form";
 
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useGetPostQuery, useNewPostMutation, useUpdatePostMutation } from "../../../api/post";
@@ -26,12 +27,21 @@ const DISABLE_COMMENT = 2;
 function Post({ post }) {
   const postId = post?.id;
   const { t } = useTranslation();
-  const [enableComment, setEnableComment] = React.useState(post?.enable_comment === DISABLE_COMMENT || true);
-  const [postStatus, setPostStatus] = React.useState(post?.status === "PRIVATE" || true);
-  const [title, setTitle] = React.useState(post?.title || "");
-  const [slug, setSlug] = React.useState(post?.slug || "");
-  const [summary, setSummary] = React.useState(post?.summary || "");
-  const [content, setContent] = React.useState(post?.content || "");
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      postStatus: post?.status ? post?.status === "PUBLISHED" : true,
+      enableComment: post?.enable_comment ? post?.enable_comment === ENABLE_COMMENT : true,
+      title: post?.title || "",
+      slug: post?.slug || "",
+      summary: post?.summary || "",
+      content: post?.content || "",
+    },
+  });
+  const { postStatus, enableComment } = useWatch({ control });
   const [error, setError] = React.useState();
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.up("sm"));
@@ -42,15 +52,14 @@ function Post({ post }) {
   const location = useLocation();
   const from = location.state?.from?.pathname;
   const search = location.state?.from?.search;
-
-  const handlePost = async (draft = "") => {
+  const handlePost = async (data, draft = "") => {
     const status = (draft || (postStatus ? "Published" : "Private")).toUpperCase();
     const tags = tag.selectTags;
     const new_post = {
-      title,
-      slug,
-      summary,
-      content,
+      title: data.title,
+      slug: data.slug,
+      summary: data.summary,
+      content: data.content,
       tags,
       status,
       enable_comment: enableComment ? ENABLE_COMMENT : DISABLE_COMMENT,
@@ -95,10 +104,13 @@ function Post({ post }) {
             >
               <FormControlLabel
                 control={
-                  <Switch
-                    checked={postStatus}
-                    onChange={() => {
-                      setPostStatus(!postStatus);
+                  <Controller
+                    name="postStatus"
+                    control={control}
+                    render={({ field }) => {
+                      return (
+                        <Switch {...field} checked={field.value} onChange={(e) => field.onChange(e.target.checked)} />
+                      );
                     }}
                   />
                 }
@@ -107,10 +119,13 @@ function Post({ post }) {
               />
               <FormControlLabel
                 control={
-                  <Switch
-                    checked={enableComment}
-                    onChange={() => {
-                      setEnableComment(!enableComment);
+                  <Controller
+                    name="enableComment"
+                    control={control}
+                    render={({ field }) => {
+                      return (
+                        <Switch {...field} checked={field.value} onChange={(e) => field.onChange(e.target.checked)} />
+                      );
                     }}
                   />
                 }
@@ -129,44 +144,70 @@ function Post({ post }) {
             alignItems: "stretch",
           }}
         >
-          <TextField
-            id="title"
-            label={t("title")}
-            required
-            value={title}
-            onChange={(e) => {
-              setTitle(e.target.value);
+          <Controller
+            name="title"
+            control={control}
+            rules={{
+              required: true,
+              minLength: { value: 4, message: t("minLength error", { name: t("title"), length: 4 }) },
+              maxLength: { value: 100, message: t("maxLength error", { name: t("title"), length: 100 }) },
             }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                id="title"
+                label={t("title")}
+                required
+                error={!!errors.title}
+                helperText={!!errors.title && errors.title.message}
+              />
+            )}
           />
         </Grid>
         <Grid item xs={12}>
-          <TextField
-            id="slug"
-            label={t("slug")}
-            fullWidth
-            value={slug}
-            onChange={(e) => {
-              setSlug(e.target.value);
+          <Controller
+            name="slug"
+            control={control}
+            rules={{
+              maxLength: { value: 50, message: t("maxLength error", { name: t("slug"), length: 50 }) },
             }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                id="slug"
+                label={t("slug")}
+                fullWidth
+                error={!!errors.slug}
+                helperText={!!errors.slug && errors.slug.message}
+              />
+            )}
           />
         </Grid>
         <Grid item xs={12}>
-          <TextField
-            id="summary"
-            label={t("summary")}
-            fullWidth
-            multiline
-            minRows={3}
-            value={summary}
-            onChange={(e) => {
-              setSummary(e.target.value);
+          <Controller
+            name="summary"
+            control={control}
+            rules={{
+              maxLength: { value: 200, message: t("maxLength error", { name: t("summary"), length: 200 }) },
             }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                id="summary"
+                label={t("summary")}
+                fullWidth
+                multiline
+                minRows={3}
+                error={!!errors.summary}
+                helperText={!!errors.summary && errors.summary.message}
+              />
+            )}
           />
         </Grid>
         <Grid item xs={12}>
           <Grid container spacing={1}>
             <Grid item xs={12} md={10}>
-              <TagsSelect contentType="post" />
+              <TagsSelect />
             </Grid>
             <Grid item xs={12} md={2} sx={{ display: "flex" }}>
               <NewTag />
@@ -174,39 +215,56 @@ function Post({ post }) {
           </Grid>
         </Grid>
         <Grid item xs={12} sx={{ minHeight: matches ? 500 : 300 }}>
-          <MDEditor
-            value={content}
-            onChange={setContent}
-            height={"100%"}
-            previewOptions={{
-              rehypePlugins: [
-                [
-                  rehypeSanitize,
-                  {
-                    ...defaultSchema,
-                    attributes: {
-                      ...defaultSchema.attributes,
-                      span: [
-                        // @ts-ignore
-                        ...(defaultSchema.attributes.span || []),
-                        // List of all allowed tokens:
-                        ["className"],
+          <Controller
+            name="content"
+            control={control}
+            rules={{
+              minLength: { value: 4, message: t("minLength error", { name: t("content"), length: 4 }) },
+            }}
+            render={({ field }) => {
+              return (
+                <MDEditor
+                  value={field.value}
+                  onChange={field.onChange}
+                  ref={(node) => {
+                    if (node && node.textarea) {
+                      field.ref.current = node.textarea;
+                    }
+                  }}
+                  height={"100%"}
+                  previewOptions={{
+                    rehypePlugins: [
+                      [
+                        rehypeSanitize,
+                        {
+                          ...defaultSchema,
+                          attributes: {
+                            ...defaultSchema.attributes,
+                            span: [
+                              // @ts-ignore
+                              ...(defaultSchema.attributes.span || []),
+                              // List of all allowed tokens:
+                              ["className"],
+                            ],
+                            code: [["className"]],
+                          },
+                        },
                       ],
-                      code: [["className"]],
-                    },
-                  },
-                ],
-              ],
+                    ],
+                  }}
+                />
+              );
             }}
           />
         </Grid>
         <Grid item xs={12}>
+          {errors.content ? <Typography color={"error"}>{errors.content.message}</Typography> : null}
           {error ? <Typography color={"error"}>{error}</Typography> : null}
           <Stack direction="row" justifyContent="flex-end" alignItems="center" spacing={2}>
-            <Button variant="outlined" onClick={() => handlePost("DRAFT")}>
+            <Button variant="outlined" onClick={handleSubmit(async (data) => handlePost(data, "draft"))}>
               {t("save draft")}
             </Button>
-            <Button variant="contained" onClick={() => handlePost()}>
+            <Button variant="contained" onClick={handleSubmit(async (data) => handlePost(data))}>
               {t("save post")}
             </Button>
           </Stack>

@@ -55,6 +55,7 @@ export const SearchButtons = () => {
               autoFocus
               id={"search"}
               value={inputText}
+              type="search"
               onChange={(e) => setInputText(e.target.value)}
             />
           </Box>

@@ -82,7 +82,6 @@ export const AdminTablePagination = ({ page, rowsPerPage, total }) => {
   const handleChangePage = (event, newPage) => {
     const params = paramsToObject(searchParams.entries());
     params.page = newPage + 1 > 0 ? newPage + 1 : 1;
-
     navigate({
       pathname: location.pathname,
       search: `?${createSearchParams(params)}`,
@@ -92,6 +91,7 @@ export const AdminTablePagination = ({ page, rowsPerPage, total }) => {
   const handleChangeRowsPerPage = (event) => {
     const perPage = parseInt(event.target.value, rowsPerPageOptions[0]);
     const params = paramsToObject(searchParams.entries());
+    params.page = 1
     params.per_page = perPage;
     navigate({
       pathname: location.pathname,

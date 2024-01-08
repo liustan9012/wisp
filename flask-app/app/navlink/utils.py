@@ -16,13 +16,13 @@ from config import basedir
 images_path = Path(r"static/images")
 
 
-def save_nav_img(name, content):
-    file_name = os.path.join(basedir, current_app.config["NAVICONPATH"], name)
+def save_nav_img(name, content, NAVICONPATH):
+    file_name = os.path.join(basedir, NAVICONPATH, name)
     with open(file_name, "wb") as f:
         f.write(content)
 
 
-def request_icon_description(navlink_url: str):
+def request_icon_description(navlink_url: str, NAVICONPATH):
     session = HTMLSession()
     ico_src = None
     description = None
@@ -78,7 +78,7 @@ def request_icon_description(navlink_url: str):
                     ext = _ext
 
             ico_name = md5(navlink_url.encode()).hexdigest()
-            save_nav_img(f"{ico_name}{ext}", ico.content)
+            save_nav_img(f"{ico_name}{ext}", ico.content, NAVICONPATH)
             logger.info(f"{ico_name}{ext}")
             ico_src = f"/imgs/{ico_name}{ext}"
         else:
@@ -91,7 +91,7 @@ def request_icon_description(navlink_url: str):
         heads = r.html.find("head")
         if heads:
             head = heads[0]
-            logger.info(head.html)
+            logger.info(str(head.html)[:200])
     return ico_src, description
 
 
@@ -135,10 +135,7 @@ def query_bookmark_file(content=None, et=None, tags=None):
             if pre_child and pre_child[0].tag == "h3":
                 subfolder = pre_child[0].text
                 logger.info(f"subfolder {subfolder}")
-                if content:
-                    new_tags = []
-                else:
-                    new_tags = [*tags, subfolder]
+                new_tags = [*tags, subfolder]
                 yield from query_bookmark_file(et=child, tags=new_tags)
 
 

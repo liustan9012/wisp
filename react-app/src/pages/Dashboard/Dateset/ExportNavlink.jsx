@@ -22,10 +22,11 @@ import { styled } from "@mui/material/styles";
 
 import { useTranslation } from "react-i18next";
 import { useRef, useState } from "react";
-import {} from "../../../api/data";
+import { useDownloadNavlinkMutation } from "../../../api/data";
 import TagsSelect from "../../Componets/TagsSelect";
 import { useSelector } from "react-redux";
 import { selectCurrentAuth } from "../../../api/authSlice";
+import { selectCurrentTag } from "../../Componets/tagSlice";
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -41,7 +42,6 @@ const VisuallyHiddenInput = styled("input")({
 
 const PUBLISHED = "PUBLISHED";
 const PRIVATE = "PRIVATE";
-const DELETE = "DELETE";
 const ALL = "ALL";
 
 const ExportNavlink = () => {
@@ -50,19 +50,18 @@ const ExportNavlink = () => {
   const [open, setOpen] = useState(false);
   const [navlinkStatus, setNavlinkStatus] = useState(ALL);
   const auth = useSelector(selectCurrentAuth);
-  //   const [downloadNavlink, { data, isLoading, isSuccess, isError }] = useDownloadNavlinkMutation();
-  const handleChangeFile = (e) => {
-    setUploadFile(e.target.files[0]);
-  };
+  const tag = useSelector(selectCurrentTag);
+  const [downloadNavlink, result] = useDownloadNavlinkMutation();
+
   const handleImport = async () => {
     let token = auth.accessToken;
 
     const headers = new Headers();
     headers.set("authorization", `Bearer ${token}`);
-    const response = await fetch("/api/navlink/download", { method: "POST", headers: headers });
-    const jsonData = await response.text();
-    // const blobData = new Blob([JSON.stringify(jsonData, null, 2)], {
-    const blobData = new Blob([jsonData], {
+    console.log(tag.selectTags, navlinkStatus);
+    const status = navlinkStatus === ALL ? null : navlinkStatus;
+    const response = await downloadNavlink({ tags: tag.selectTags, status }).unwrap();
+    const blobData = new Blob([response], {
       type: "application/html",
     });
     const blobUrl = URL.createObjectURL(blobData);
@@ -88,18 +87,17 @@ const ExportNavlink = () => {
       </Stack>
       <Divider />
       <Box sx={{ mt: 2 }}>
-        <Typography sx={{ width: 80 }}> {t("export conditions")}</Typography>
+        <Typography> {t("export conditions")}</Typography>
         <Stack sx={{ mt: 2 }} spacing={2}>
           <Typography sx={{ width: 80 }}> {t("tag")}</Typography>
           <TagsSelect sx={{ width: 300 }} />
-          {/* <TextField value={uploadFile?.name || ""} disabled size="small" sx={{ minWidth: 240 }}></TextField> */}
         </Stack>
         <Stack sx={{ mt: 2, maxWidth: 300 }} spacing={2}>
           <Typography sx={{ width: 80 }}>{t("status")}</Typography>
           <Select
             labelId="select-status-label"
             id="select-status"
-            value={navlinkStatus || PRIVATE}
+            value={navlinkStatus}
             sx={{ minWidth: 240 }}
             onChange={(e) => setNavlinkStatus(e.target.value)}
             size="small"
@@ -107,32 +105,11 @@ const ExportNavlink = () => {
             <MenuItem value={ALL}>{t("all")}</MenuItem>
             <MenuItem value={PUBLISHED}>{t("published")}</MenuItem>
             <MenuItem value={PRIVATE}>{t("private")}</MenuItem>
-            <MenuItem value={DELETE}>{t("delete")}</MenuItem>
           </Select>
         </Stack>
-        <Button
-          variant="contained"
-          //   disabled={isLoading}
-          //   startIcon={isLoading && <CircularProgress size={24} />}
-          onClick={handleImport}
-          sx={{ mt: 2 }}
-        >
+        <Button variant="contained" onClick={handleImport} sx={{ mt: 2 }}>
           {t("export")}
         </Button>
-        {/* <Dialog open={open} onClose={handleClose} maxWidth={"xs"} fullWidth>
-          <DialogTitle id="export-navlink-dialog-title">{t("import navlink")}</DialogTitle>
-          <DialogContent>
-            <DialogContentText id="export-navlink-dialog-description">
-              {data && data?.msg === "OK" ? `success: ${data?.count?.success} failure: ${data?.count?.failure}` : ""}
-              {data && data?.msg === "error" ? `error: ${data?.error}` : ""}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose} autoFocus>
-              {t("confirm")}
-            </Button>
-          </DialogActions>
-        </Dialog> */}
       </Box>
     </Box>
   );

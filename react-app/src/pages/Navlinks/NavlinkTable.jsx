@@ -20,6 +20,7 @@ const Navlink = ({ tag }) => {
         m: 2,
         // width: {  lg: 180 }, flex: {  lg: 0 }
       }}
+      draggable
       elevation={elevation}
       onMouseEnter={(e) => setElevation(8)}
       onMouseLeave={(e) => setElevation(initElevation)}
@@ -60,7 +61,6 @@ const Navlink = ({ tag }) => {
               width: { xs: 160 },
               fontWeight: "bold",
               overflow: "hidden",
-              textOverflow: "clip",
             }}
           >
             {linkname}

@@ -9,4 +9,4 @@ while true; do
 done
 # flask translate compile
 flask create admin
-exec gunicorn -b :5100 --access-logfile - --error-logfile - wispblog:app
+exec gunicorn -b :5100 --timeout 180 --access-logfile - --error-logfile - wispblog:app

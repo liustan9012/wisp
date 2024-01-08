@@ -14,19 +14,23 @@ import { useTheme } from "@mui/material/styles";
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
 
 import { setUser } from "../../api/authSlice";
 import { useSignInMutation } from "../../api/auth";
 import { useTranslation } from "react-i18next";
-import { INITUSER } from "../../utils/init";
 
 export default function SignIn() {
   const { t } = useTranslation();
-  const [username, setUsername] = useState(INITUSER.username);
-  const [password, setPassword] = useState(INITUSER.password);
-  const [remember, setRemember] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm();
+
   const [error, setError] = useState("");
-  const [signIn] = useSignInMutation();
+  const [signIn, result] = useSignInMutation();
   const dispatch = useDispatch();
   const theme = useTheme();
 
@@ -34,25 +38,23 @@ export default function SignIn() {
   const location = useLocation();
   const from = location.state?.from?.pathname || "/";
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     try {
-      const data = await signIn({ username, password, remember }).unwrap();
-      if (data.msg === "OK") {
-        const userid = data.user_id;
-        const accessToken = data.access_token;
-        const refreshToken = data.refresh_token;
+      const response = await signIn({ ...data }).unwrap();
+      if (response.msg === "OK") {
+        const userid = response.user_id;
+        const username = response.username;
+        const accessToken = response.access_token;
+        const refreshToken = response.refresh_token;
         dispatch(setUser({ username, userid, accessToken, refreshToken }));
-        setPassword("");
         navigate(from, { replace: true });
       } else {
-        setError(data.error);
+        setError(response.error);
       }
     } catch (error) {
       console.error(error);
     }
   };
-
   return (
     <Box
       sx={{
@@ -69,7 +71,7 @@ export default function SignIn() {
       <Typography component="h1" variant="h5">
         {t("Sign in")}
       </Typography>
-      <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1, maxWidth: 400 }}>
+      <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate sx={{ mt: 1, maxWidth: 400 }}>
         <TextField
           margin="normal"
           required
@@ -79,8 +81,13 @@ export default function SignIn() {
           name="username"
           autoComplete="username"
           autoFocus
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          error={!!errors.username}
+          {...register("username", {
+            required: true,
+            minLength: { value: 4, message: t("minLength error", { name: t("username"), length: 4 }) },
+            maxLength: { value: 20, message: t("maxLength error", { name: t("username"), length: 20 }) },
+          })}
+          helperText={!!errors.username && errors.username.message}
         />
         <TextField
           margin="normal"
@@ -90,26 +97,23 @@ export default function SignIn() {
           label={t("password")}
           type="password"
           id="password"
-          autoComplete="current-password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          autoComplete="password"
+          error={!!errors.password}
+          {...register("password", {
+            required: true,
+            minLength: { value: 6, message: t("minLength error", { name: t("username"), length: 6 }) },
+            maxLength: { value: 20, message: t("maxLength error", { name: t("username"), length: 20 }) },
+          })}
+          helperText={!!errors.password && errors.password.message}
         />
-        <FormControlLabel
-          control={<Checkbox checked={remember} color="primary" onChange={(e) => setRemember(e.target.checked)} />}
-          label={t("Remember me")}
-        />
+        <FormControlLabel control={<Checkbox color="primary" {...register("remember")} />} label={t("Remember me")} />
         <Typography variant="subtitle1" sx={{ color: theme.palette.error.main }} gutterBottom>
           {error ? error : ""}
         </Typography>
-        <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }} onClick={handleSubmit}>
+        <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }} onClick={handleSubmit(onSubmit)}>
           {t("Sign in")}
         </Button>
         <Grid container>
-          <Grid item xs>
-            {/* <Link href="#" variant="body2">
-                Forgot password?
-              </Link> */}
-          </Grid>
           <Grid item>
             <Link to={"/signup"} variant="body2" component={RouterLink}>
               {t("Don't have an account? Sign Up")}
