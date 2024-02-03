@@ -13,12 +13,11 @@ import { useForm } from "react-hook-form";
 
 function TagComponet({ tag }) {
   const { t } = useTranslation();
-  const [name, setName] = useState(tag?.name || "");
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm();
+  } = useForm({defaultValues:{name: tag?.name || ""}});
   const [error, setError] = useState("");
   const [updateTag] = useUpdateTagMutation();
   const [newTag] = useNewTagMutation();

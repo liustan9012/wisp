@@ -54,7 +54,6 @@ def edit_tag(tag_id):
     if tag is None:
         raise ValidationDBError("the tag is not exist.")
     tag.name = req.name
-    tag.content_type = req.content_type
     db.session.add(tag)
     db.session.commit()
     return jsonify(msg="OK", tag=tag.dict())
