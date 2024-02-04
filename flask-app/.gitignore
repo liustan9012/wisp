@@ -151,6 +151,10 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 instance/
-static/images/
+static/images/*
+!static/images/baidu.ico
+!static/images/bing.ico
+!static/images/google.ico
+
 *.db
 .vscode/*

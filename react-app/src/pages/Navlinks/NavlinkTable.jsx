@@ -17,7 +17,7 @@ const Navlink = ({ tag }) => {
       sm={3}
       xs={5}
       sx={{
-        m: 2,
+        m: 1.5,
         // width: {  lg: 180 }, flex: {  lg: 0 }
       }}
       draggable
@@ -32,7 +32,7 @@ const Navlink = ({ tag }) => {
         target="_blank"
         color="inherit"
         sx={{
-          padding: 1.5,
+          padding: 1,
           display: "flex",
           flexDirection: "column",
           justifyContent: "flex-start",
