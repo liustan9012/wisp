@@ -2,10 +2,10 @@
 FROM python:3.10-bookworm
 
 # Set the working directory
-WORKDIR /app/flask-app
+WORKDIR /app/flask-server
 
 # Copy  requirements files
-COPY  requirements.txt /app/flask-app/requirements.txt
+COPY  requirements.txt /app/flask-server/requirements.txt
 
 # Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt

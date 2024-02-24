@@ -50,7 +50,7 @@ wisp 是一个包含博客、网址导航的个人技术网站，使用 react + 
    创建 python 虚拟环境，激活虚拟环境
 
    ```sh
-   cd flask-app
+   cd flask-server
    python -m venv venv
    source venv/bin/activate
    ```

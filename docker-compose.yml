@@ -2,14 +2,14 @@ version: '3'
 
 services:
 
-  flask-app:
-    build: ./flask-app
-    container_name: flask-app
+  flask-server:
+    build: ./flask-server
+    container_name: flask-server
     ports:
       - "5100:5100"
     volumes:
-      - ./flask-app/instance:/app/flask-app/instance
-      - ./flask-app/static/images:/app/flask-app/static/images
+      - ./flask-server/instance:/app/flask-server/instance
+      - ./flask-server/static/images:/app/flask-server/static/images
     environment:
       - DATABASE_URL=sqlite:///wisp.db
       - JWT_SECRET_KEY=you-secret-key
@@ -24,6 +24,6 @@ services:
       - "5180:8080"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./flask-app/static/images:/var/www/static/images
+      - ./flask-server/static/images:/var/www/static/images
     depends_on:
-      - flask-app
+      - flask-server
