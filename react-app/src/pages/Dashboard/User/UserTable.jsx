@@ -1,22 +1,29 @@
-import * as React from "react";
-import Box from "@mui/material/Box";
-import Paper from "@mui/material/Paper";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TablePagination from "@mui/material/TablePagination";
-import TableRow from "@mui/material/TableRow";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import { Link as RouteLink, useLocation, useSearchParams } from "react-router-dom";
-import { AdminTableHead, AdminTablePagination } from "../../Componets/AsminTable";
-import { useGetUsersQuery } from "../../../api/auth";
-import { timeConverter } from "../../../utils/datetime";
-import { paramsToObject } from "../../../utils/converter";
-import { useTranslation } from "react-i18next";
-import { Button } from "@mui/material";
-import { Add } from "@mui/icons-material";
+import * as React from "react"
+import { Add } from "@mui/icons-material"
+import { Button } from "@mui/material"
+import Box from "@mui/material/Box"
+import Paper from "@mui/material/Paper"
+import Table from "@mui/material/Table"
+import TableBody from "@mui/material/TableBody"
+import TableCell from "@mui/material/TableCell"
+import TableContainer from "@mui/material/TableContainer"
+import TablePagination from "@mui/material/TablePagination"
+import TableRow from "@mui/material/TableRow"
+import Toolbar from "@mui/material/Toolbar"
+import Typography from "@mui/material/Typography"
+import { useTranslation } from "react-i18next"
+import {
+  Link as RouteLink,
+  useLocation,
+  useSearchParams,
+} from "react-router-dom"
+
+import { useUsers } from "../../../api/auth"
+import { timeConverter } from "../../../utils/datetime"
+import {
+  AdminTableHead,
+  AdminTablePagination,
+} from "../../Componets/AsminTable"
 
 const headCells = [
   {
@@ -44,28 +51,31 @@ const headCells = [
     numeric: true,
     label: "role",
   },
-];
+]
 
 export default function UserTable() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const params = paramsToObject(searchParams.entries());
-  const { t } = useTranslation();
-  const { data, isLoading } = useGetUsersQuery({ params });
+  const [searchParams, setSearchParams] = useSearchParams()
+  const { t } = useTranslation()
+  const { data, isLoading } = useUsers(searchParams)
 
-  const [selected, setSelected] = React.useState(null);
+  const [selected, setSelected] = React.useState(null)
 
   if (isLoading) {
-    return <Typography>Loading...</Typography>;
+    return <Typography>Loading...</Typography>
   }
 
-  const users = data.users || [];
-  const { page, per_page: rowsPerPage, order, order_by: orderBy, total } = data;
-  const emptyRows = page > 0 ? Math.max(0, 1 * rowsPerPage - users.length) : 0;
+  const users = data.users || []
+  const { page, per_page: rowsPerPage, order, order_by: orderBy, total } = data
+  const emptyRows = page > 0 ? Math.max(0, 1 * rowsPerPage - users.length) : 0
   return (
-    <Box sx={{ mt: 2, width: "100%", display: "flex", justifyContent: "center" }}>
+    <Box
+      sx={{ mt: 2, width: "100%", display: "flex", justifyContent: "center" }}
+    >
       <Paper variant="outlined" sx={{ width: "80%", mb: 2 }}>
         <Toolbar sx={{ pl: { sm: 2 }, pr: { xs: 8 } }}>
-          <Typography sx={{ pl: 4, flexGrow: 1, textTransform: "capitalize" }}>{t("user")}</Typography>
+          <Typography sx={{ pl: 4, flexGrow: 1, textTransform: "capitalize" }}>
+            {t("user")}
+          </Typography>
           <Button
             startIcon={<Add />}
             variant="contained"
@@ -77,8 +87,16 @@ export default function UserTable() {
           </Button>
         </Toolbar>
         <TableContainer>
-          <Table sx={{ minWidth: 750 }} aria-labelledby="User Table" size="small">
-            <AdminTableHead headCells={headCells} order={order} orderBy={orderBy} />
+          <Table
+            sx={{ minWidth: 750 }}
+            aria-labelledby="User Table"
+            size="small"
+          >
+            <AdminTableHead
+              headCells={headCells}
+              order={order}
+              orderBy={orderBy}
+            />
             <TableBody>
               {users.map((user) => {
                 return (
@@ -91,15 +109,25 @@ export default function UserTable() {
                     selected={selected == user.id}
                     sx={{ cursor: "pointer" }}
                   >
-                    <TableCell component="th" id={`user-${user.username.id}`} scope="row" padding="none" align="center">
+                    <TableCell
+                      component="th"
+                      id={`user-${user.username.id}`}
+                      scope="row"
+                      padding="none"
+                      align="center"
+                    >
                       {user.id}
                     </TableCell>
                     <TableCell align="center">{user.username}</TableCell>
                     <TableCell align="center">{user.email}</TableCell>
-                    <TableCell align="center">{timeConverter(user.created_at)}</TableCell>
-                    <TableCell align="center">{user.is_admin ? "admin" : "user"}</TableCell>
+                    <TableCell align="center">
+                      {timeConverter(user.created_at)}
+                    </TableCell>
+                    <TableCell align="center">
+                      {user.is_admin ? "admin" : "user"}
+                    </TableCell>
                   </TableRow>
-                );
+                )
               })}
               {emptyRows > 0 && (
                 <TableRow
@@ -113,8 +141,12 @@ export default function UserTable() {
             </TableBody>
           </Table>
         </TableContainer>
-        <AdminTablePagination total={total} rowsPerPage={rowsPerPage} page={page} />
+        <AdminTablePagination
+          total={total}
+          rowsPerPage={rowsPerPage}
+          page={page}
+        />
       </Paper>
     </Box>
-  );
+  )
 }

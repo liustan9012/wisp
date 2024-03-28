@@ -1,13 +1,11 @@
-import * as React from "react";
-import { useLocation, Navigate } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { selectCurrentAuth } from "./api/authSlice";
+import * as React from "react"
+import { Navigate, useLocation } from "react-router-dom"
 
-import PropTypes from "prop-types";
+import { useAuthStore } from "./store"
 
 export function RequireAuth({ children }) {
-  const auth = useSelector(selectCurrentAuth);
-  const location = useLocation();
+  const auth = useAuthStore((state) => state.auth)
+  const location = useLocation()
   if (!auth?.isAdmin) {
     return (
       <Navigate
@@ -15,11 +13,7 @@ export function RequireAuth({ children }) {
         state={{ from: location, message: `user not allowed` }}
         replace
       />
-    );
+    )
   }
-  return children;
+  return children
 }
-
-RequireAuth.propTypes = {
-  children: PropTypes.any,
-};

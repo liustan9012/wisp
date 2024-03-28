@@ -1,32 +1,30 @@
+import { useRef, useState } from "react"
+import CloudUploadIcon from "@mui/icons-material/CloudUpload"
+import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined"
 import {
   Box,
   Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   Divider,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
   Stack,
   TextField,
   Typography,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  CircularProgress,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogContentText,
-  DialogActions,
-} from "@mui/material";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
-import FileDownloadOutlinedIcon from "@mui/icons-material/FileDownloadOutlined";
-import { styled } from "@mui/material/styles";
+} from "@mui/material"
+import { styled } from "@mui/material/styles"
+import { useTranslation } from "react-i18next"
 
-import { useTranslation } from "react-i18next";
-import { useRef, useState } from "react";
-import { useDownloadNavlinkMutation } from "../../../api/data";
-import TagsSelect from "../../Componets/TagsSelect";
-import { useSelector } from "react-redux";
-import { selectCurrentAuth } from "../../../api/authSlice";
-import { selectCurrentTag } from "../../Componets/tagSlice";
+import { useDownloadNavlink } from "../../../api/data"
+import { useTagStore } from "../../../store"
+import TagsSelect from "../../Componets/TagsSelect"
 
 const VisuallyHiddenInput = styled("input")({
   clip: "rect(0 0 0 0)",
@@ -38,50 +36,48 @@ const VisuallyHiddenInput = styled("input")({
   left: 0,
   whiteSpace: "nowrap",
   width: 1,
-});
+})
 
-const PUBLISHED = "PUBLISHED";
-const PRIVATE = "PRIVATE";
-const ALL = "ALL";
+const PUBLISHED = "PUBLISHED"
+const PRIVATE = "PRIVATE"
+const ALL = "ALL"
 
 const ExportNavlink = () => {
-  const { t } = useTranslation();
-  const [uploadFile, setUploadFile] = useState(null);
-  const [open, setOpen] = useState(false);
-  const [navlinkStatus, setNavlinkStatus] = useState(ALL);
-  const auth = useSelector(selectCurrentAuth);
-  const tag = useSelector(selectCurrentTag);
-  const [downloadNavlink, result] = useDownloadNavlinkMutation();
+  const { t } = useTranslation()
+  const [uploadFile, setUploadFile] = useState(null)
+  const [open, setOpen] = useState(false)
+  const [navlinkStatus, setNavlinkStatus] = useState(ALL)
+  const selectTags = useTagStore((state) => state.selectTags)
+  const { trigger: downloadNavlink } = useDownloadNavlink()
 
   const handleImport = async () => {
-    let token = auth.accessToken;
-
-    const headers = new Headers();
-    headers.set("authorization", `Bearer ${token}`);
-    console.log(tag.selectTags, navlinkStatus);
-    const status = navlinkStatus === ALL ? null : navlinkStatus;
-    const response = await downloadNavlink({ tags: tag.selectTags, status }).unwrap();
+    const status = navlinkStatus === ALL ? null : navlinkStatus
+    const response = await downloadNavlink({ tags: selectTags, status })
     const blobData = new Blob([response], {
       type: "application/html",
-    });
-    const blobUrl = URL.createObjectURL(blobData);
+    })
+    const blobUrl = URL.createObjectURL(blobData)
 
-    const downloadLink = document.createElement("a");
-    downloadLink.href = blobUrl;
-    downloadLink.download = "navlinks.html";
+    const downloadLink = document.createElement("a")
+    downloadLink.href = blobUrl
+    downloadLink.download = "navlinks.html"
 
-    document.body.appendChild(downloadLink);
-    downloadLink.click();
+    document.body.appendChild(downloadLink)
+    downloadLink.click()
 
-    URL.revokeObjectURL(blobUrl);
-    document.body.removeChild(downloadLink);
-  };
+    URL.revokeObjectURL(blobUrl)
+    document.body.removeChild(downloadLink)
+  }
 
   return (
     <Box sx={{ p: 2 }}>
       <Stack direction={"row"} spacing={2} sx={{ mb: 1, alignItems: "center" }}>
         <FileDownloadOutlinedIcon color={"primary"} />
-        <Typography component="h1" variant="h6" sx={{ textTransform: "capitalize" }}>
+        <Typography
+          component="h1"
+          variant="h6"
+          sx={{ textTransform: "capitalize" }}
+        >
           {t("export navlink")}
         </Typography>
       </Stack>
@@ -112,7 +108,7 @@ const ExportNavlink = () => {
         </Button>
       </Box>
     </Box>
-  );
-};
+  )
+}
 
-export default ExportNavlink;
+export default ExportNavlink

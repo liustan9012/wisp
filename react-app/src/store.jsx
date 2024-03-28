@@ -1,29 +1,57 @@
-import { configureStore, combineReducers } from "@reduxjs/toolkit";
-import { setupListeners } from "@reduxjs/toolkit/query";
+import jwt_decode from "jwt-decode"
+import { create } from "zustand"
+import { createJSONStorage, persist } from "zustand/middleware"
 
-import { baseApi } from "./api/base";
-import authReducer from "./api/authSlice";
-import themeReducer from "./api/themeSlice";
-import tagReducer from "./pages/Componets/tagSlice";
-import commentReducer from "./pages/Post/commentsSlice";
+export const useAuthStore = create(
+  persist(
+    (set, get) => ({
+      auth: {},
+      setUser: ({ userid, username, accessToken, refreshToken }) => {
+        const isAdmin = jwt_decode(accessToken).is_admin
+        set({ auth: { userid, username, accessToken, refreshToken, isAdmin } })
+      },
+      unsetUser: () => set({ auth: {} }),
+      tokenRefresh: (accessToken) => {
+        const isAdmin = jwt_decode(accessToken).is_admin
+        set({ auth: { ...get().auth, accessToken, isAdmin } })
+      },
+    }),
+    {
+      name: "auth", // name of the item in the storage (must be unique)
+      partialize: (state) => ({ auth: state.auth }),
+      //   storage: createJSONStorage(() => sessionStorage), // (optional) by default, 'localStorage' is used
+    }
+  )
+)
 
-const rootReducer = combineReducers({
-  [baseApi.reducerPath]: baseApi.reducer,
-  auth: authReducer,
-  tag: tagReducer,
-  comment: commentReducer,
-  theme: themeReducer,
-});
+export const useThemeStore = create(
+  persist(
+    (set, get) => ({
+      theme: {},
+      setTheme: (newTheme) => {
+        set({ theme: newTheme })
+      },
+    }),
+    {
+      name: "theme",
+      partialize: (state) => ({ theme: state.theme }),
+    }
+  )
+)
 
-export const store = configureStore({
-  reducer: rootReducer,
-  // Adding the api middleware enables caching, invalidation, polling,
-  // and other useful features of `rtk-query`.
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(baseApi.middleware),
-  devTools: import.meta.env.MODE === "development" &&
-    window.__REDUX_DEVTOOLS_EXTENSION__ &&
-    window.__REDUX_DEVTOOLS_EXTENSION__(),
-});
-
-setupListeners(store.dispatch);
+export const useTagStore = create((set) => ({
+  tags: [],
+  selectTags: [],
+  setUserTags: (tags) => {
+    set(() => ({ tags: tags }))
+  },
+  newTag: (tag) => {
+    set((state) => ({
+      tags: [...state.tags, tag],
+      selectTags: [...state.selectTags, tag],
+    }))
+  },
+  setSelectTags: (tags) => {
+    set(() => ({ selectTags: tags }))
+  },
+}))

@@ -99,5 +99,7 @@
   "maxLength error": "{{name}} should be at most {{length}} characters.",
   "email error pattern": "the email is not supported",
   "password error match": "the passwords do not match",
+  "edite": "edite",
+  "done": "done",
   "Welcome": "Welcome to react"
 }

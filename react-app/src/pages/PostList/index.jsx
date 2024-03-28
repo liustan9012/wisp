@@ -1,31 +1,34 @@
-import React from "react";
+import React from "react"
+import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined"
 import {
-  Typography,
-  Stack,
-  Paper,
-  Link,
-  CardContent,
-  CardActions,
-  CardHeader,
   Card,
-  Divider,
+  CardActions,
+  CardContent,
+  CardHeader,
   Chip,
-} from "@mui/material";
-import Pagination from "@mui/material/Pagination";
-import PaginationItem from "@mui/material/PaginationItem";
-import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
+  Divider,
+  Link,
+  Paper,
+  Stack,
+  Typography,
+} from "@mui/material"
+import { grey } from "@mui/material/colors"
+import Pagination from "@mui/material/Pagination"
+import PaginationItem from "@mui/material/PaginationItem"
+import { useTranslation } from "react-i18next"
+import {
+  Link as RouterLink,
+  useLocation,
+  useSearchParams,
+} from "react-router-dom"
 
-import { Link as RouterLink, useSearchParams } from "react-router-dom";
-import { useGetPostListQuery } from "../../api/post";
-import { timeConverter } from "../../utils/datetime";
-import { paramsToObject } from "../../utils/converter";
-import { useTranslation } from "react-i18next";
-import { grey } from "@mui/material/colors";
+import { usePostList } from "../../api/post"
+import { timeConverter } from "../../utils/datetime"
 
 const PostCard = ({ post }) => {
-  const { t } = useTranslation();
-  const initElevation = 0;
-  const [elevation, setElevation] = React.useState(initElevation);
+  const { t } = useTranslation()
+  const initElevation = 0
+  const [elevation, setElevation] = React.useState(initElevation)
 
   return (
     <Card
@@ -49,12 +52,18 @@ const PostCard = ({ post }) => {
         }
         subheader={
           <Stack
-            sx={{ flexDirection: { xs: "column", sm: "row" }, flexWrap: "wrap", gap: 1 }}
+            sx={{
+              flexDirection: { xs: "column", sm: "row" },
+              flexWrap: "wrap",
+              gap: 1,
+            }}
             divider={<Divider orientation="vertical" flexItem />}
           >
             <Stack direction={"row"} spacing={1}>
               <CalendarMonthOutlinedIcon />
-              <Typography>{timeConverter(post.created_at).slice(0, -3)}</Typography>
+              <Typography>
+                {timeConverter(post.created_at).slice(0, -3)}
+              </Typography>
             </Stack>
             {post.tags.length ? (
               <Stack direction={"row"} spacing={1}>
@@ -78,26 +87,39 @@ const PostCard = ({ post }) => {
         <Typography>{post?.summary || post.title}</Typography>
       </CardContent>
       <CardActions disableSpacing>
-        <Link sx={{ pl: 1 }} to={`/post/${post.id}`} component={RouterLink} underline="none">
+        <Link
+          sx={{ pl: 1 }}
+          to={`/post/${post.id}`}
+          component={RouterLink}
+          underline="none"
+        >
           {t("more")}{" "}
         </Link>
       </CardActions>
     </Card>
-  );
-};
+  )
+}
 
 export default function PostList() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const params = paramsToObject(searchParams.entries());
-  const { t } = useTranslation();
-  const { data, isLoading } = useGetPostListQuery({ params });
+  const [searchParams, setSearchParams] = useSearchParams()
+  const { t } = useTranslation()
+  const { data, isLoading } = usePostList(searchParams)
 
-  if (isLoading) return <Typography>{t("Loading...")}</Typography>;
-  if (!data || data?.msg === "error") return <Typography>{t("Missing post!")}</Typography>;
-  if (data.pages == 0) return <Typography>{t("no posts yet")}</Typography>;
-  const { posts } = data;
+  if (isLoading) return <Typography>{t("Loading...")}</Typography>
+  if (!data || data?.msg === "error")
+    return <Typography>{t("Missing post!")}</Typography>
+  if (data.pages == 0) return <Typography>{t("no posts yet")}</Typography>
+  const { posts } = data
   return (
-    <Paper elevation={0} sx={{ mt: 2, display: "flex", flexDirection: "column", minHeight: "80vh" }}>
+    <Paper
+      elevation={0}
+      sx={{
+        mt: 2,
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "80vh",
+      }}
+    >
       <Stack sx={{ gap: 2, flexGrow: 1 }}>
         {posts.map((post) => (
           <PostCard key={post.id} post={post} />
@@ -120,5 +142,5 @@ export default function PostList() {
         ""
       )}
     </Paper>
-  );
+  )
 }

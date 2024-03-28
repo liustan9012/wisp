@@ -1,33 +1,33 @@
-import React, { Suspense } from "react";
-import ReactDOM from "react-dom/client";
-import CssBaseline from "@mui/material/CssBaseline";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { green, purple } from "@mui/material/colors";
-import { RouterProvider } from "react-router-dom";
-import { Provider } from "react-redux";
+import React, { Suspense } from "react"
+import CssBaseline from "@mui/material/CssBaseline"
+import ReactDOM from "react-dom/client"
+import { RouterProvider } from "react-router-dom"
 
-import "./i18n";
+import "./i18n"
+import "./index.css"
 
-import "./index.css";
-import router from "./routes";
-import { store } from "./store";
-import CustmerThemeProvider from "./themeProvider";
+import { SWRConfig } from "swr"
+
+import { useSWROptions } from "./api/auth"
+import router from "./routes"
+import CustmerThemeProvider from "./themeProvider"
 
 const App = () => {
+  const options = useSWROptions()
   return (
-    <Suspense fallback="loading">
-      <CustmerThemeProvider>
-        <CssBaseline />
-        <RouterProvider router={router} />
-      </CustmerThemeProvider>
-    </Suspense>
-  );
-};
+    <SWRConfig value={options}>
+      <Suspense fallback="loading">
+        <CustmerThemeProvider>
+          <CssBaseline />
+          <RouterProvider router={router} />
+        </CustmerThemeProvider>
+      </Suspense>
+    </SWRConfig>
+  )
+}
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <Provider store={store}>
-      <App />
-    </Provider>
-  </React.StrictMode>,
-);
+    <App />
+  </React.StrictMode>
+)

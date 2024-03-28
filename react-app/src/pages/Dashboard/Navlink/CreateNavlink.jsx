@@ -1,36 +1,38 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from "react"
+import { AddLink } from "@mui/icons-material"
 import {
   Avatar,
   Box,
   Button,
   Container,
-  Grid,
-  Stack,
-  Select,
-  MenuItem,
-  TextField,
-  InputLabel,
-  Typography,
   FormControl,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Select,
   Snackbar,
-} from "@mui/material";
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material"
+import { Controller, useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
+import { useLocation, useNavigate, useParams } from "react-router-dom"
 
-import { AddLink } from "@mui/icons-material";
-import { useCreateNavlinkMutation, useReqNavlinkQuery, useUpdateNavlinkMutation } from "../../../api/navlink";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-import { useForm, Controller } from "react-hook-form";
+import {
+  useCreateNavlink,
+  useNavlink,
+  useUpdateNavlink,
+} from "../../../api/navlink"
+import { useTagStore } from "../../../store"
+import TagsSelect from "../../Componets/TagsSelect"
 
-import TagsSelect from "../../Componets/TagsSelect";
-import { setSelectTags } from "../../Componets/tagSlice";
-import { useTranslation } from "react-i18next";
-
-const PUBLISHED = "PUBLISHED";
-const PRIVATE = "PRIVATE";
-const DELETE = "DELETE";
+const PUBLISHED = "PUBLISHED"
+const PRIVATE = "PRIVATE"
+const DELETE = "DELETE"
 
 export const Navlink = ({ navlink, handleSucess }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
   const defaultValues = {
     linkname: "",
     url: "",
@@ -40,7 +42,7 @@ export const Navlink = ({ navlink, handleSucess }) => {
     status: PUBLISHED,
     description: "",
     ...navlink,
-  };
+  }
   const {
     register,
     handleSubmit,
@@ -50,42 +52,42 @@ export const Navlink = ({ navlink, handleSucess }) => {
     formState: { errors },
   } = useForm({
     defaultValues,
-  });
+  })
   useEffect(() => {
-    reset({ ...defaultValues });
-  }, [navlink]);
+    reset({ ...defaultValues })
+  }, [navlink])
   const [snackBarOption, setSnackBarOption] = useState({
     open: false,
     message: "",
-  });
-  const [error, setError] = useState("");
-  const [createNavlink, createNavlinkResult] = useCreateNavlinkMutation();
-  const [updateNavlink, updateNavlinkResult] = useUpdateNavlinkMutation();
-  const navlinkId = navlink?.id;
+  })
+  const [error, setError] = useState("")
+  const navlinkId = navlink?.id
 
-  const tag = useSelector((state) => state.tag);
+  const selectTags = useTagStore((state) => state.selectTags)
+  const { trigger: createNavlink } = useCreateNavlink()
+  const { trigger: updateNavlink } = useUpdateNavlink()
 
   const onSubmit = async (data) => {
-    const newNav = { ...data };
-    newNav.tags = tag.selectTags;
-    let response;
+    const newNav = { ...data }
+    newNav.tags = selectTags
+    let response
     if (navlinkId) {
       response = await updateNavlink({
         navlinkId,
         navlink: { ...newNav },
-      }).unwrap();
+      })
     } else {
-      response = await createNavlink({ ...newNav }).unwrap();
+      response = await createNavlink({ ...newNav })
     }
     if (response?.msg === "OK") {
-      setError(null);
+      setError(null)
       if (!!handleSucess) {
-        handleSucess(response);
+        handleSucess(response)
       }
     } else if (response?.msg === "error") {
-      setError(response.error);
+      setError(response.error)
     }
-  };
+  }
   return (
     <Container maxWidth="xs">
       <Box
@@ -103,7 +105,11 @@ export const Navlink = ({ navlink, handleSucess }) => {
         <Typography variant="h5" sx={{ textTransform: "capitalize" }}>
           {t("create navlink")}
         </Typography>
-        <Box component="form" noValidate sx={{ mt: 3, display: "flex", justifyContent: "center" }}>
+        <Box
+          component="form"
+          noValidate
+          sx={{ mt: 3, display: "flex", justifyContent: "center" }}
+        >
           <Grid container spacing={2}>
             <Grid item xs={12}>
               <TextField
@@ -116,8 +122,20 @@ export const Navlink = ({ navlink, handleSucess }) => {
                 error={!!errors.linkname}
                 {...register("linkname", {
                   required: true,
-                  minLength: { value: 1, message: t("minLength error", { name: t("linkname"), length: 1 }) },
-                  maxLength: { value: 50, message: t("maxLength error", { name: t("linkname"), length: 50 }) },
+                  minLength: {
+                    value: 1,
+                    message: t("minLength error", {
+                      name: t("linkname"),
+                      length: 1,
+                    }),
+                  },
+                  maxLength: {
+                    value: 50,
+                    message: t("maxLength error", {
+                      name: t("linkname"),
+                      length: 50,
+                    }),
+                  },
                 })}
                 helperText={!!errors.linkname && errors.linkname.message}
               />
@@ -132,8 +150,20 @@ export const Navlink = ({ navlink, handleSucess }) => {
                 error={!!errors.url}
                 {...register("url", {
                   required: true,
-                  minLength: { value: 1, message: t("minLength error", { name: t("url"), length: 1 }) },
-                  maxLength: { value: 500, message: t("maxLength error", { name: t("url"), length: 500 }) },
+                  minLength: {
+                    value: 1,
+                    message: t("minLength error", {
+                      name: t("url"),
+                      length: 1,
+                    }),
+                  },
+                  maxLength: {
+                    value: 500,
+                    message: t("maxLength error", {
+                      name: t("url"),
+                      length: 500,
+                    }),
+                  },
                 })}
                 helperText={!!errors.url && errors.url.message}
               />
@@ -145,19 +175,35 @@ export const Navlink = ({ navlink, handleSucess }) => {
                 fullWidth
                 error={!!errors.favicon}
                 {...register("favicon", {
-                  maxLength: { value: 500, message: t("maxLength error", { name: t("favicon"), length: 500 }) },
+                  maxLength: {
+                    value: 500,
+                    message: t("maxLength error", {
+                      name: t("favicon"),
+                      length: 500,
+                    }),
+                  },
                 })}
                 helperText={!!errors.favicon && errors.favicon.message}
               />
             </Grid>
             <Grid item xs={12}>
-              <Stack direction={"row"} spacing={2} sx={{ justifyContent: "space-between", alignItems: "center" }}>
+              <Stack
+                direction={"row"}
+                spacing={2}
+                sx={{ justifyContent: "space-between", alignItems: "center" }}
+              >
                 <TextField
                   name="shortstr"
                   label={t("shortstr")}
                   error={!!errors.shortstr}
                   {...register("shortstr", {
-                    maxLength: { value: 50, message: t("maxLength error", { name: t("shortstr"), length: 50 }) },
+                    maxLength: {
+                      value: 50,
+                      message: t("maxLength error", {
+                        name: t("shortstr"),
+                        length: 50,
+                      }),
+                    },
                   })}
                   helperText={!!errors.shortstr && errors.shortstr.message}
                 />
@@ -168,17 +214,30 @@ export const Navlink = ({ navlink, handleSucess }) => {
                   sx={{ width: 80 }}
                   error={!!errors.order}
                   {...register("order", {
-                    maxLength: { max: 10000, message: t("max value error", { name: t("order"), value: 10000 }) },
+                    maxLength: {
+                      max: 10000,
+                      message: t("max value error", {
+                        name: t("order"),
+                        value: 10000,
+                      }),
+                    },
                   })}
                   helperText={!!errors.order && errors.order.message}
                 />
                 <FormControl sx={{ width: 120 }}>
-                  <InputLabel id="select-status-label">{t("status")}</InputLabel>
+                  <InputLabel id="select-status-label">
+                    {t("status")}
+                  </InputLabel>
                   <Controller
                     name="status"
                     control={control}
                     render={({ field }) => (
-                      <Select {...field} labelId="select-status-label" id="select-status" label={t("status")}>
+                      <Select
+                        {...field}
+                        labelId="select-status-label"
+                        id="select-status"
+                        label={t("status")}
+                      >
                         <MenuItem value={PUBLISHED}>{t("published")}</MenuItem>
                         <MenuItem value={PRIVATE}>{t("private")}</MenuItem>
                         <MenuItem value={DELETE}>{t("delete")}</MenuItem>
@@ -200,13 +259,23 @@ export const Navlink = ({ navlink, handleSucess }) => {
                 fullWidth
                 error={!!errors.description}
                 {...register("description", {
-                  maxLength: { value: 500, message: t("maxLength error", { name: t("description"), length: 500 }) },
+                  maxLength: {
+                    value: 500,
+                    message: t("maxLength error", {
+                      name: t("description"),
+                      length: 500,
+                    }),
+                  },
                 })}
                 helperText={!!errors.description && errors.description.message}
               />
             </Grid>
             <Grid item xs={12}>
-              <Button variant="contained" fullWidth onClick={handleSubmit(onSubmit)}>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={handleSubmit(onSubmit)}
+              >
                 {navlinkId !== undefined ? t("update") : t("create")}
               </Button>
             </Grid>
@@ -220,33 +289,30 @@ export const Navlink = ({ navlink, handleSucess }) => {
         />
       </Box>
     </Container>
-  );
-};
+  )
+}
 
 const CreateNavlink = () => {
-  const { navlinkId } = useParams();
-  const { t } = useTranslation();
-  const { data, isFetching } = useReqNavlinkQuery(navlinkId, {
-    skip: !!!navlinkId,
-    refetchOnMountOrArgChange: true,
-  });
-  const navlink = !!navlinkId ? data?.navlink : {};
-  const tags = navlink?.tags || [];
-  const dispatch = useDispatch();
+  const { navlinkId } = useParams()
+  const { t } = useTranslation()
+  const { data, isFetching } = useNavlink(navlinkId)
+  const navlink = !!navlinkId ? data?.navlink : {}
+  const tags = navlink?.tags || []
+  const setSelectTags = useTagStore((state) => state.setSelectTags)
 
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigate = useNavigate()
+  const location = useLocation()
 
   useEffect(() => {
-    dispatch(setSelectTags({ selectTags: tags }));
-  }, [navlink]);
+    setSelectTags(tags)
+  }, [navlink])
   const handleSucess = (data) => {
-    const from = location.state?.from?.pathname;
-    const search = location.state?.from?.search;
-    navigate(!!from ? `${from}${search}` : `/admin/navlink/list`);
-  };
-  if (isFetching) return <Typography>{t("Loading...")}</Typography>;
-  return <Navlink {...{ navlink, handleSucess }} />;
-};
+    const from = location.state?.from?.pathname
+    const search = location.state?.from?.search
+    navigate(!!from ? `${from}${search}` : `/admin/navlink/list`)
+  }
+  if (isFetching) return <Typography>{t("Loading...")}</Typography>
+  return <Navlink {...{ navlink, handleSucess }} />
+}
 
-export default CreateNavlink;
+export default CreateNavlink

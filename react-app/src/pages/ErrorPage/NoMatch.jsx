@@ -1,9 +1,9 @@
-import React from "react";
-import { Typography, Box, Link } from "@mui/material";
-import { useLocation, Link as RouteLink } from "react-router-dom";
+import React from "react"
+import { Box, Link, Typography } from "@mui/material"
+import { Link as RouteLink, useLocation } from "react-router-dom"
 
 export default function NoMatch() {
-  const location = useLocation();
+  const location = useLocation()
   return (
     <Box
       sx={{
@@ -28,5 +28,5 @@ export default function NoMatch() {
         )}
       </Typography>
     </Box>
-  );
+  )
 }

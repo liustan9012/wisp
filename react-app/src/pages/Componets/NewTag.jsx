@@ -1,52 +1,50 @@
-import * as React from "react";
-import Button from "@mui/material/Button";
-import TextField from "@mui/material/TextField";
+import * as React from "react"
+import Button from "@mui/material/Button"
 // import Box from '@mui/material/Box';
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
+import Dialog from "@mui/material/Dialog"
+import DialogActions from "@mui/material/DialogActions"
+import DialogContent from "@mui/material/DialogContent"
 // import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from "@mui/material/DialogTitle";
-import useMediaQuery from "@mui/material/useMediaQuery";
-import { useTheme } from "@mui/material/styles";
+import DialogTitle from "@mui/material/DialogTitle"
+import { useTheme } from "@mui/material/styles"
+import TextField from "@mui/material/TextField"
+import useMediaQuery from "@mui/material/useMediaQuery"
+import { useTranslation } from "react-i18next"
 
-// import { useNewTagMutation, } from '../../api/tag'
-import { newTag } from "./tagSlice";
-import { useDispatch } from "react-redux";
-import { useNewTagMutation } from "../../api/tag";
-import { useTranslation } from "react-i18next";
+import { useCreateTag } from "../../api/tag"
+import { useTagStore } from "../../store"
 
 export default function FormDialog() {
-  const theme = useTheme();
-  const { t } = useTranslation();
-  const [open, setOpen] = React.useState(false);
-  const matches = useMediaQuery(theme.breakpoints.up("sm"));
-  const [name, setName] = React.useState("");
-  const [error, setError] = React.useState(null);
+  const theme = useTheme()
+  const { t } = useTranslation()
+  const [open, setOpen] = React.useState(false)
+  const matches = useMediaQuery(theme.breakpoints.up("sm"))
+  const [name, setName] = React.useState("")
+  const [error, setError] = React.useState(null)
+  const newTag = useTagStore((state) => state.newTag)
+  const { trigger: createTag } = useCreateTag()
 
-  const [reqNewtag] = useNewTagMutation();
-  const dispatch = useDispatch();
   const handleClickOpen = () => {
-    setOpen(true);
-  };
+    setOpen(true)
+  }
 
   const handleClose = () => {
-    setOpen(false);
-  };
+    setOpen(false)
+  }
   const handleNewTag = async () => {
     try {
-      const data = await reqNewtag({ name }).unwrap();
+      const data = await createTag({ name })
       if (data?.msg === "OK") {
-        dispatch(newTag({ tag: data.tag }));
-        setOpen(false);
+        newTag(data.tag)
+        setOpen(false)
       } else {
-        setError(data.error);
+        setError(data.error)
       }
     } catch (error) {
-      console.error(error);
-      setOpen(false);
+      console.error(error)
+      setOpen(false)
     }
-  };
+  }
 
   return (
     <>
@@ -83,5 +81,5 @@ export default function FormDialog() {
         </DialogActions>
       </Dialog>
     </>
-  );
+  )
 }

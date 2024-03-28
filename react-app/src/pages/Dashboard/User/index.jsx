@@ -1,6 +1,6 @@
-import React from "react";
+import React from "react"
 
-import CreateUser from "./CreateUser";
-import UserTable from "./UserTable";
+import CreateUser from "./CreateUser"
+import UserTable from "./UserTable"
 
-export { UserTable, CreateUser };
+export { UserTable, CreateUser }

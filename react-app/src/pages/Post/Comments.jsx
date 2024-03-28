@@ -1,45 +1,50 @@
-import { Box, Button, CardContent, CardHeader, Divider, Link, Stack, TextField, Typography } from "@mui/material";
-import React, { useState } from "react";
-import { Link as RouteLink, useLocation, useParams } from "react-router-dom";
+import React from "react"
+import {
+  Box,
+  Button,
+  CardContent,
+  CardHeader,
+  Divider,
+  Link,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material"
+import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
+import { Link as RouteLink, useLocation, useParams } from "react-router-dom"
 
-import PropTypes from "prop-types";
-import { useSelector } from "react-redux";
-import { selectCurrentAuth } from "../../api/authSlice";
-import { useNewCommentMutation } from "../../api/comment";
-import StringAvatar from "../../Componets/StringAvatar";
-import { timeConverter } from "../../utils/datetime";
-import { useTranslation } from "react-i18next";
-import { useForm } from "react-hook-form";
+import { useCreateComment } from "../../api/comment"
+import StringAvatar from "../../Componets/StringAvatar"
+import { useAuthStore } from "../../store"
+import { timeConverter } from "../../utils/datetime"
 
-export default function CommentList({ comments }) {
-  const { t } = useTranslation();
-  const comment = useSelector((state) => state.comment);
+export default function CommentList({ comments, handleComment }) {
+  const { t } = useTranslation()
   const {
     register,
     handleSubmit,
     setError,
     setValue,
     formState: { errors },
-  } = useForm({ defaultValues: { content: "" } });
-  const { postId } = useParams();
-  const location = useLocation();
-
-  const [newComment] = useNewCommentMutation();
-
-  const auth = useSelector(selectCurrentAuth);
+  } = useForm({ defaultValues: { content: "" } })
+  const { postId } = useParams()
+  const location = useLocation()
+  const auth = useAuthStore((state) => state.auth)
+  const { trigger: createComment } = useCreateComment()
 
   const handleReply = async (data) => {
-    console.log(data);
-    const response = await newComment({
+    const response = await createComment({
       content: data.content,
       postId,
-    }).unwrap();
+    })
     if (response?.msg !== "OK") {
-      setError("content", { type: "server", message: response.error });
+      setError("content", { type: "server", message: response.error })
     } else {
-      setValue("content", "");
+      setValue("content", "")
+      handleComment()
     }
-  };
+  }
   return (
     <Box>
       <Divider flexItem />
@@ -50,11 +55,16 @@ export default function CommentList({ comments }) {
               sx={{ p: 1 }}
               title={
                 <Stack direction={"row"} alignItems="center">
-                  <StringAvatar name={c.username} alt={c.username}></StringAvatar>
+                  <StringAvatar
+                    name={c.username}
+                    alt={c.username}
+                  ></StringAvatar>
                   <Typography variant="h6" sx={{ pl: 1 }}>
                     {c.username}{" "}
                   </Typography>
-                  <Typography sx={{ ml: 2, pb: 0 }}>{timeConverter(c.created_at)}</Typography>
+                  <Typography sx={{ ml: 2, pb: 0 }}>
+                    {timeConverter(c.created_at)}
+                  </Typography>
                 </Stack>
               }
             />
@@ -78,31 +88,48 @@ export default function CommentList({ comments }) {
         error={!!errors.content}
         {...register("content", {
           required: true,
-          minLength: { value: 4, message: t("minLength error", { name: t("comment"), length: 4 }) },
-          maxLength: { value: 1000, message: t("maxLength error", { name: t("comment"), length: 1000 }) },
+          minLength: {
+            value: 4,
+            message: t("minLength error", { name: t("comment"), length: 4 }),
+          },
+          maxLength: {
+            value: 1000,
+            message: t("maxLength error", { name: t("comment"), length: 1000 }),
+          },
         })}
         helperText={!!errors.content && errors.content?.message}
       />
       <Stack direction="row">
         {!auth.username ? (
           <Stack direction={"row"} alignItems="stretch" sx={{ mt: 2 }}>
-            <Link to="/signin" state={{ from: location }} underline="none" variant="h6" component={RouteLink}>
+            <Link
+              to="/signin"
+              state={{ from: location }}
+              underline="none"
+              variant="h6"
+              component={RouteLink}
+            >
               {t("signin")}
             </Link>
-            <Button sx={{ ml: 1 }} variant="outlined" onClick={handleSubmit(handleReply)} disabled>
+            <Button
+              sx={{ ml: 1 }}
+              variant="outlined"
+              onClick={handleSubmit(handleReply)}
+              disabled
+            >
               {t("reply")}
             </Button>
           </Stack>
         ) : (
-          <Button onClick={handleSubmit(handleReply)} variant="outlined" sx={{ mt: 2 }}>
+          <Button
+            onClick={handleSubmit(handleReply)}
+            variant="outlined"
+            sx={{ mt: 2 }}
+          >
             {t("reply")}
           </Button>
         )}
       </Stack>
     </Box>
-  );
+  )
 }
-
-CommentList.propTypes = {
-  comments: PropTypes.array,
-};

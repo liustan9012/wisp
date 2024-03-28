@@ -1,66 +1,98 @@
-import { baseApi } from "./base";
+import useSWR, { mutate } from "swr"
+import useSWRMutation from "swr/mutation"
 
-const authApi = baseApi.injectEndpoints({
-  endpoints: (build) => ({
-    getHello: build.query({
-      query: () => ({
-        url: "/hello",
-        responseHandler: (response) => response.text(),
-      }),
-    }),
-    signIn: build.mutation({
-      query: ({ username, password, remember }) => ({
-        url: "/login",
-        method: "post",
-        body: { username, password, remember },
-      }),
-    }),
-    signUp: build.mutation({
-      query: ({ username, email, password1, password2 }) => ({
-        url: `/register`,
-        method: "post",
-        body: { username, email, password1, password2 },
-      }),
-    }),
-    changePassword: build.mutation({
-      query: ({ username, password1, password2 }) => ({
-        url: `/change_password`,
-        method: "post",
-        body: { username, password1, password2 },
-      }),
-    }),
-    signOut: build.mutation({
-      query: () => ({
-        url: `/logout`,
-        method: "post",
-      }),
-    }),
-    deleteUser: build.mutation({
-      query: ({ userid }) => ({
-        url: `/user/${userid}/delete`,
-        method: "post",
-      }),
-    }),
-    getUsers: build.query({
-      query: ({ params }) => ({
-        url: `/users`,
-        method: "post",
-        params,
-      }),
-    }),
+import { useAuthStore } from "../store"
+import request from "./request"
 
-    overrideExisting: false,
-  }),
-});
+export const useHello = () => {
+  return useSWR("/hello", fetch)
+}
 
-export const {
-  useSignInMutation,
-  useSignUpMutation,
-  useChangePasswordMutation,
-  useSignOutMutation,
-  useDeleteUserMutation,
-  useGetHelloQuery,
-  useGetUsersQuery,
-} = authApi;
+const signIn = async (key, { arg: { username, password, remember } }) => {
+  return await request(key, { body: { username, password, remember } })
+}
 
-export default authApi;
+export const useSignIn = () => {
+  return useSWRMutation({ url: `/login`, method: "post" }, signIn)
+}
+
+const signUp = async (
+  key,
+  { arg: { username, email, password1, password2 } }
+) => {
+  return await request(key, { body: { username, email, password1, password2 } })
+}
+
+export const useSignUp = () => {
+  return useSWRMutation({ url: `/register`, method: "post" }, signUp)
+}
+
+const changePassword = async (
+  key,
+  { arg: { username, password1, password2 } }
+) => {
+  return await request(key, { body: { username, password1, password2 } })
+}
+
+export const useChangePassword = () => {
+  return useSWRMutation(
+    { url: `/change_password`, method: "post" },
+    changePassword
+  )
+}
+
+const signOut = async (key, { arg: {} }) => {
+  return await request({ url: `/logout`, method: "post" })
+}
+
+export const useSignOut = () => {
+  return useSWRMutation({ url: `/logout`, method: "post" }, signOut)
+}
+
+const deleteUser = async (key, { arg: userid }) => {
+  return await request({ url: `/user/${userid}/delete`, method: "post" })
+}
+
+export const useDeleteUser = () => {
+  return useSWRMutation(
+    { url: `/user/userid/delete`, method: "post" },
+    deleteUser
+  )
+}
+
+export const useUsers = (searchParams) => {
+  return useSWR({ url: "/users", searchParams, method: "post" }, request)
+}
+
+const refresh = async () => {
+  return await request({
+    url: "/refresh",
+    method: "post",
+    authorization: "refreshToken",
+  })
+}
+
+export const useSWROptions = () => {
+  const auth = useAuthStore((state) => state.auth)
+  const tokenRefresh = useAuthStore((state) => state.tokenRefresh)
+  const unsetUser = useAuthStore((state) => state.unsetUser)
+  const options = {
+    revalidateOnFocus: false,
+    onError: async (error, key, config) => {
+      if (error.status === 401) {
+        if (!!!auth.refreshToken) {
+          unsetUser()
+        } else {
+          const refreshResult = await refresh()
+          if (refreshResult?.msg === "OK") {
+            tokenRefresh(refreshResult.access_token)
+          } else {
+            unsetUser()
+          }
+        }
+        mutate(key)
+      }
+    },
+  }
+  return options
+}

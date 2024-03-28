@@ -1,69 +1,71 @@
-import { baseApi } from "./base";
+import useSWR, { mutate } from "swr"
+import useSWRMutation from "swr/mutation"
 
-const navlinkapi = baseApi.injectEndpoints({
-  endpoints: (build) => ({
-    createNavlink: build.mutation({
-      query: (navlink) => ({
-        url: `/navlink`,
-        method: "post",
-        body: navlink,
-      }),
-      invalidatesTags: ["NavlinkList"],
-    }),
+import request from "./request"
 
-    deleteNavlink: build.mutation({
-      query: (navlinkId) => ({
-        url: `/navlink/${navlinkId}/delete`,
-        method: "post",
-      }),
-      invalidatesTags: ["NavlinkList"],
-    }),
+const createNavlink = async (key, { arg: navlink }) => {
+  return await request(key, { body: navlink })
+}
 
-    updateNavlink: build.mutation({
-      query: ({ navlinkId, navlink }) => ({
-        url: `/navlink/${navlinkId}/update`,
-        method: "post",
-        body: navlink,
-      }),
-      invalidatesTags: ["NavlinkList"],
-    }),
+export const useCreateNavlink = () => {
+  return useSWRMutation({ url: `/navlink`, method: "post" }, createNavlink)
+}
 
-    getLinks: build.query({
-      query: () => ({
-        url: `/links`,
-        method: "get",
-      }),
-      providesTags: ["NavlinkList"],
-    }),
+const updateNavlink = async (key, { arg: { navlinkId, navlink } }) => {
+  return await request(
+    { url: `/navlink/${navlinkId}/update`, method: "post" },
+    { body: navlink }
+  )
+}
 
-    getNavlinks: build.query({
-      query: ({ params }) => ({
-        url: `/navlinks`,
-        method: "get",
-        params,
-      }),
-      providesTags: ["NavlinkList"],
-    }),
+export const useUpdateNavlink = () => {
+  return useSWRMutation(
+    { url: `/navlink/update`, method: "post" },
+    updateNavlink
+  )
+}
 
-    reqNavlink: build.query({
-      query: (navlinkId) => ({
-        url: `/navlink/${navlinkId}`,
-        method: "get",
-      }),
-      providesTags: ["NavlinkList"],
-    }),
+const deleteNavlink = async (key, { arg: navlinkId }) => {
+  return await request({ url: `/navlink/${navlinkId}/delete`, method: "post" })
+}
 
-    overrideExisting: false,
-  }),
-});
+export const useDeleteNavlink = () => {
+  return useSWRMutation(
+    { url: `/navlink/delete`, method: "post" },
+    deleteNavlink
+  )
+}
 
-export const {
-  useCreateNavlinkMutation,
-  useDeleteNavlinkMutation,
-  useUpdateNavlinkMutation,
-  useGetLinksQuery,
-  useGetNavlinksQuery,
-  useReqNavlinkQuery,
-} = navlinkapi;
+export const useLinks = () => {
+  const { data, error, isLoading, mutate } = useSWR({ url: `/links` }, request)
+  return {
+    data: data,
+    isLoading,
+    isError: error,
+    mutate,
+  }
+}
 
-export default navlinkapi;
+export const useNavlink = (navlinkId) => {
+  const url = `/navlink/${navlinkId}`
+  const { data, error, isLoading } = useSWR(navlinkId ? { url } : null, request)
+  return {
+    data: data,
+    isLoading,
+    isError: error,
+  }
+}
+
+export const useNavlinks = (searchParams) => {
+  const url = `/navlinks`
+  const { data, error, isLoading, mutate } = useSWR(
+    { url, searchParams },
+    request
+  )
+  return {
+    data: data,
+    isLoading,
+    isError: error,
+    mutate,
+  }
+}

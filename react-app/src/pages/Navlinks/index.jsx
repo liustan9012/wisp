@@ -1,57 +1,55 @@
-import * as React from "react";
-
+import React, { useState } from "react"
+import { ArrowRight } from "@mui/icons-material"
+import CloseIcon from "@mui/icons-material/Close"
+import MenuIcon from "@mui/icons-material/Menu"
 import {
-  Container,
-  Typography,
-  Button,
+  AppBar,
   Box,
-  Toolbar,
+  Button,
+  Container,
   Drawer,
   IconButton,
   Link,
-  AppBar,
-  TextField,
   Stack,
-} from "@mui/material";
-import { useGetLinksQuery } from "../../api/navlink";
-import { useEffect, useState } from "react";
-import MenuIcon from "@mui/icons-material/Menu";
-import { SearchButtons } from "./Search";
-import UserAvatar from "../Componets/UserAvatar";
-import NavlinkTable from "./NavlinkTable";
-import { ArrowRight } from "@mui/icons-material";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import { Link as RouterLink } from "react-router-dom";
-import { Navlink } from "../Dashboard/Navlink/CreateNavlink";
+  Toolbar,
+  Typography,
+} from "@mui/material"
+import Dialog from "@mui/material/Dialog"
+import DialogContent from "@mui/material/DialogContent"
+import { useTranslation } from "react-i18next"
+import { Link as RouterLink } from "react-router-dom"
 
-import CloseIcon from "@mui/icons-material/Close";
-import { useTranslation } from "react-i18next";
-import LightModeToggle from "../Componets/LightToggle";
-import LanguageToggle from "../Componets/LanguageTogole";
+import { useLinks } from "../../api/navlink"
+import { useTagStore } from "../../store"
+import LanguageToggle from "../Componets/LanguageTogole"
+import LightModeToggle from "../Componets/LightToggle"
+import UserAvatar from "../Componets/UserAvatar"
+import { Navlink } from "../Dashboard/Navlink/CreateNavlink"
+import NavlinkTable from "./NavlinkTable"
+import { SearchButtons } from "./Search"
 
 const scrollToElement = ({ elementId, offset }) => {
-  const element = document.getElementById(elementId);
-  const elementToTop = element?.getBoundingClientRect().top || 0;
-  let offsetTop = elementToTop + window.scrollY + offset;
+  const element = document.getElementById(elementId)
+  const elementToTop = element?.getBoundingClientRect().top || 0
+  let offsetTop = elementToTop + window.scrollY + offset
   window.scrollTo({
     top: offsetTop,
     behavior: "smooth",
-  });
-};
+  })
+}
 
 const SideBar = ({ tags }) => {
-  const [selected, setSelected] = useState(tags[0].id);
-  const { t } = useTranslation();
+  const [selected, setSelected] = useState(tags[0]?.id)
+  const { t } = useTranslation()
 
   const handleClickMenu = ({ tag }) => {
-    let offset = -75;
+    let offset = -75
     if (tag.name === "default") {
-      offset += -160;
+      offset += -160
     }
-    scrollToElement({ elementId: tag.name, offset });
-    setSelected(tag.id);
-  };
+    scrollToElement({ elementId: tag.name, offset })
+    setSelected(tag.id)
+  }
   return (
     <Box
       sx={{
@@ -90,17 +88,16 @@ const SideBar = ({ tags }) => {
           >
             {tag.name}
           </Button>
-        );
+        )
       })}
     </Box>
-  );
-};
+  )
+}
 
-const NewNavlinkDialog = ({ open, handleClose }) => {
+const NewNavlinkDialog = ({ open, navlink, handleClose }) => {
   const handleSucess = (data) => {
-    console.log(data);
-    handleClose();
-  };
+    handleClose()
+  }
 
   return (
     <Dialog open={open} onClose={handleClose} sx={{ flex: 1 }}>
@@ -117,12 +114,12 @@ const NewNavlinkDialog = ({ open, handleClose }) => {
         <CloseIcon />
       </IconButton>
       <DialogContent sx={{ p: 4 }}>
-        <Navlink handleSucess={handleSucess} />
+        <Navlink navlink={navlink} handleSucess={handleSucess} />
         {/* <CreateNavlink /> */}
       </DialogContent>
     </Dialog>
-  );
-};
+  )
+}
 
 const bgImage = {
   backgroundImage: "url(/imgs/BACKGROUND.png)",
@@ -130,16 +127,32 @@ const bgImage = {
   backgroundRepeat: "no-repeat",
   backgroundSize: "auto 100% ",
   backgroundAttachment: "fixed",
-};
+}
 
 const Navlinks = (props) => {
-  const { data, isLoading } = useGetLinksQuery();
-  const { t } = useTranslation();
-  const tagNavlinks = data?.tag_navlinks || [];
-
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [newNavOpen, setNewNavOpen] = useState(false);
-
+  const { t } = useTranslation()
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const [newNavOpen, setNewNavOpen] = useState(false)
+  const [editable, setEditable] = useState(false)
+  const [navlink, setNavlink] = useState(null)
+  const setSelectTags = useTagStore((state) => state.setSelectTags)
+  const handleAddNavlink = (tag) => () => {
+    const tags = tag.name === "default" ? [] : [tag]
+    setSelectTags(tags)
+    setNavlink(null)
+    setNewNavOpen(!newNavOpen)
+  }
+  const handleEditNavlink = (navlink) => () => {
+    // const tags = tag.name === "default" ? [] : [tag]
+    setSelectTags(navlink.tags)
+    setNavlink(navlink)
+    setNewNavOpen(!newNavOpen)
+  }
+  const handleDone = () => {
+    setEditable(!editable)
+  }
+  const { data, isLoading, mutate } = useLinks()
+  const tagNavlinks = data?.tag_navlinks || []
   // useEffect(() => {
   //     const bodyStyle = document.body.style
   //     Object.keys(bgImage).forEach((key) => {
@@ -156,11 +169,10 @@ const Navlinks = (props) => {
       <Container disableGutters sx={{ marginTop: 2 }}>
         <Typography>NavLinkPage </Typography>
       </Container>
-    );
+    )
   }
 
-  const drawerWidth = 200;
-
+  const drawerWidth = 200
   return (
     <Container disableGutters maxWidth={"xl"} sx={{ display: "flex" }}>
       <Box
@@ -228,7 +240,11 @@ const Navlinks = (props) => {
             </IconButton>
             <Typography sx={{ flexGrow: 1 }} align="center"></Typography>
             <Box sx={{ flexGrow: 0, pr: 2 }}>
-              <Stack direction={"row"} spacing={1} sx={{ alignItems: "center" }}>
+              <Stack
+                direction={"row"}
+                spacing={1}
+                sx={{ alignItems: "center" }}
+              >
                 <Button component={RouterLink} to="/" underline="none">
                   <Typography variant="button">{t("home")}</Typography>
                 </Button>
@@ -237,22 +253,36 @@ const Navlinks = (props) => {
                 <UserAvatar
                   adminMenus={[
                     {
-                      key: t("new navlink"),
+                      key: t("edite"),
                       to: "",
-                      onClick: () => setNewNavOpen(!newNavOpen),
+                      // onClick: () => setNewNavOpen(!newNavOpen),
+                      onClick: () => setEditable(!editable),
                     },
                   ]}
                 />
-                <NewNavlinkDialog open={newNavOpen} handleClose={() => setNewNavOpen(!newNavOpen)} />
+                <NewNavlinkDialog
+                  open={newNavOpen}
+                  navlink={navlink}
+                  handleClose={() => {
+                    setNewNavOpen(!newNavOpen)
+                    mutate()
+                  }}
+                />
               </Stack>
             </Box>
           </Toolbar>
         </AppBar>
         <SearchButtons></SearchButtons>
-        <NavlinkTable tagNavlinks={tagNavlinks} />
+        <NavlinkTable
+          tagNavlinks={tagNavlinks}
+          editable={editable}
+          handleDone={handleDone}
+          handleEditNavlink={handleEditNavlink}
+          handleAddNavlink={handleAddNavlink}
+        />
       </Box>
     </Container>
-  );
-};
+  )
+}
 
-export default Navlinks;
+export default Navlinks

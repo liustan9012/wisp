@@ -1,3 +1,4 @@
-import NavlinkTable from "./NavlinkTable";
-import CreateNavlink from "./CreateNavlink";
-export { NavlinkTable, CreateNavlink as NewNavlink };
+import CreateNavlink from "./CreateNavlink"
+import NavlinkTable from "./NavlinkTable"
+
+export { NavlinkTable, CreateNavlink as NewNavlink }

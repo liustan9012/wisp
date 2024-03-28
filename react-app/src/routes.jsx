@@ -1,30 +1,27 @@
-import React from "react";
-import { NavLink, createBrowserRouter } from "react-router-dom";
+import React from "react"
+import { Tune } from "@mui/icons-material"
+import { createBrowserRouter, NavLink } from "react-router-dom"
 
-import Home from "./pages/Home";
-
-import About from "./pages/About";
-
-import Layout, { AdminLayout, AccountLayout } from "./Layout";
-import { RequireAuth } from "./context";
-import ErrorPage, { NoMatch } from "./pages/ErrorPage";
-import Post from "./pages/Post";
-import PostList from "./pages/PostList";
-import SignIn from "./pages/Signin";
-import SignUp from "./pages/Signup";
-import TimeLine from "./pages/Timeline";
-import TagPage from "./pages/Tag";
-import TagsPage from "./pages/Tags";
-
-import { NewPost, PostTable } from "./pages/Dashboard/Post";
-import { TagTable, CreateTag } from "./pages/Dashboard/Tag";
-import { CreateUser, UserTable } from "./pages/Dashboard/User";
-import { CommentTable } from "./pages/Dashboard/Comment";
-import { NavlinkTable, NewNavlink } from "./pages/Dashboard/Navlink";
-import Navlinks from "./pages/Navlinks";
-import Settings from "./pages/Settings";
-import { Tune } from "@mui/icons-material";
-import Dataset from "./pages/Dashboard/Dateset";
+import { RequireAuth } from "./context"
+import Layout, { AccountLayout, AdminLayout } from "./Layout"
+import About from "./pages/About"
+import { CommentTable } from "./pages/Dashboard/Comment"
+import Dataset from "./pages/Dashboard/Dateset"
+import { NavlinkTable, NewNavlink } from "./pages/Dashboard/Navlink"
+import { NewPost, PostTable } from "./pages/Dashboard/Post"
+import { CreateTag, TagTable } from "./pages/Dashboard/Tag"
+import { CreateUser, UserTable } from "./pages/Dashboard/User"
+import ErrorPage, { NoMatch } from "./pages/ErrorPage"
+import Home from "./pages/Home"
+import Navlinks from "./pages/Navlinks"
+import Post from "./pages/Post"
+import PostList from "./pages/PostList"
+import Settings from "./pages/Settings"
+import SignIn from "./pages/Signin"
+import SignUp from "./pages/Signup"
+import TagPage from "./pages/Tag"
+import TagsPage from "./pages/Tags"
+import TimeLine from "./pages/Timeline"
 
 const router = createBrowserRouter([
   {
@@ -217,6 +214,6 @@ const router = createBrowserRouter([
       ,
     ],
   },
-]);
+])
 
-export default router;
+export default router

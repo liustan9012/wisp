@@ -1,20 +1,18 @@
-import React from "react";
+import React, { useContext } from "react"
+import LanguageIcon from "@mui/icons-material/Language"
+import { Box, IconButton, Menu, MenuItem, useTheme } from "@mui/material"
 
-import { useContext } from "react";
-import { Box, IconButton, Menu, useTheme, MenuItem } from "@mui/material";
-import LanguageIcon from "@mui/icons-material/Language";
-import { ChangeThemeContext } from "../../themeProvider";
+import { ChangeThemeContext } from "../../themeProvider"
 
 export default function LanguageToggle({ color }) {
-  const [anchorElUser, setAnchorElUser] = React.useState(null);
-  const theme = useTheme();
-  const { changeLanguage } = useContext(ChangeThemeContext);
+  const [anchorElUser, setAnchorElUser] = React.useState(null)
+  const { changeLanguage } = useContext(ChangeThemeContext)
   const handleOpenUserMenu = (event) => {
-    setAnchorElUser(event.currentTarget);
-  };
+    setAnchorElUser(event.currentTarget)
+  }
   const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
-  };
+    setAnchorElUser(null)
+  }
   return (
     <>
       <IconButton onClick={handleOpenUserMenu} color={color || "inherit"}>
@@ -40,5 +38,5 @@ export default function LanguageToggle({ color }) {
         <MenuItem onClick={() => changeLanguage("en")}>{"English"}</MenuItem>
       </Menu>
     </>
-  );
+  )
 }

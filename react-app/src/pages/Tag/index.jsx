@@ -1,17 +1,18 @@
-import React from "react";
-import { Typography, Stack, Paper, Link, Divider } from "@mui/material";
-import { Link as RouterLink, useParams } from "react-router-dom";
-import { useGetTagQuery } from "../../api/tag";
-import { timeConverter } from "../../utils/datetime";
+import React from "react"
+import { Divider, Link, Paper, Stack, Typography } from "@mui/material"
+import { Link as RouterLink, useParams } from "react-router-dom"
+
+import { useTag } from "../../api/tag"
+import { timeConverter } from "../../utils/datetime"
 
 export default function TagPage() {
-  const { tagId } = useParams();
-  const { data, isLoading } = useGetTagQuery(tagId);
+  const { tagId } = useParams()
+  const { data, isLoading } = useTag(tagId)
 
-  if (isLoading) return <Typography>Loading...</Typography>;
+  if (isLoading) return <Typography>Loading...</Typography>
   if (!data || data?.msg === "error")
-    return <Typography>Missing post!</Typography>;
-  const { tag } = data;
+    return <Typography>Missing post!</Typography>
+  const { tag } = data
   return (
     <Paper elevation={0} sx={{ mt: 4 }}>
       <Typography variant="h5">{tag.name}</Typography>
@@ -33,5 +34,5 @@ export default function TagPage() {
         </Stack>
       ))}
     </Paper>
-  );
+  )
 }

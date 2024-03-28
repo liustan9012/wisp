@@ -1,13 +1,12 @@
-import React from "react";
-import { Typography } from "@mui/material";
+import React from "react"
+import { Typography } from "@mui/material"
 
-import { useGetHelloQuery } from "../../api/auth";
-import { useSelector } from "react-redux";
-import { selectCurrentAuth } from "../../api/authSlice";
+import { usePostList } from "../../api/post"
+import { useAuthStore } from "../../store"
 
 export default function Home() {
-  const { data, error, isLoading } = useGetHelloQuery();
-  const auth = useSelector(selectCurrentAuth);
+  const { data, error, isLoading } = usePostList()
+  const auth = useAuthStore((state) => state.auth)
   return (
     <Typography variant="button" display="block" gutterBottom>
       <p>Hello 1</p>
@@ -18,11 +17,11 @@ export default function Home() {
         ) : isLoading ? (
           <>Loading...</>
         ) : data ? (
-          <>{`${data} ${auth.username || ""}`}</>
+          <>{`post ${data.total} ${auth.username || ""}`}</>
         ) : null}
       </p>
       {/* <p>error {error}</p> */}
       {/* <p>isLoading {isLoading}</p> */}
     </Typography>
-  );
+  )
 }

@@ -1,59 +1,59 @@
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import Avatar from "@mui/material/Avatar";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Checkbox from "@mui/material/Checkbox";
-import Container from "@mui/material/Container";
-import CssBaseline from "@mui/material/CssBaseline";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Grid from "@mui/material/Grid";
-import Link from "@mui/material/Link";
-import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
-import { useTheme } from "@mui/material/styles";
-import React, { useState } from "react";
-import { useDispatch } from "react-redux";
-import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
+import React, { useState } from "react"
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined"
+import Avatar from "@mui/material/Avatar"
+import Box from "@mui/material/Box"
+import Button from "@mui/material/Button"
+import Checkbox from "@mui/material/Checkbox"
+import Container from "@mui/material/Container"
+import CssBaseline from "@mui/material/CssBaseline"
+import FormControlLabel from "@mui/material/FormControlLabel"
+import Grid from "@mui/material/Grid"
+import Link from "@mui/material/Link"
+import { useTheme } from "@mui/material/styles"
+import TextField from "@mui/material/TextField"
+import Typography from "@mui/material/Typography"
+import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
+import { Link as RouterLink, useLocation, useNavigate } from "react-router-dom"
 
-import { useSignUpMutation } from "../../api/auth";
-import { setUser } from "../../api/authSlice";
-import { useTranslation } from "react-i18next";
+import { useSignUp } from "../../api/auth"
+import { useAuthStore } from "../../store"
 
 export default function SignUp() {
-  const { t } = useTranslation();
-  const [signUp] = useSignUpMutation();
+  const { t } = useTranslation()
 
   const {
     register,
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm();
-  const password1 = watch("password1", "");
-  const [error, setError] = useState("");
-  const dispatch = useDispatch();
-  const location = useLocation();
-  const from = location.state?.from?.pathname || "/";
-  const navigate = useNavigate();
-  const theme = useTheme();
+  } = useForm()
+  const password1 = watch("password1", "")
+  const [error, setError] = useState("")
+  const location = useLocation()
+  const from = location.state?.from?.pathname || "/"
+  const navigate = useNavigate()
+  const theme = useTheme()
+
+  const setUser = useAuthStore((state) => state.setUser)
+  const { trigger: signUp } = useSignUp()
 
   const onSubmit = async (data) => {
     try {
-      const response = await signUp({ ...data }).unwrap();
+      const response = await signUp({ ...data })
       if (response.msg === "OK") {
-        const username = response.username;
-        const userid = response.user_id;
-        const accessToken = response.access_token;
-        dispatch(setUser({ username, userid, accessToken }));
-        navigate(from, { replace: true });
+        const username = response.username
+        const userid = response.user_id
+        const accessToken = response.access_token
+        setUser({ username, userid, accessToken })
+        navigate(from, { replace: true })
       } else {
-        setError(response.error);
+        setError(response.error)
       }
     } catch (error) {
-      console.error(error);
+      console.error(error)
     }
-  };
+  }
 
   return (
     <Box
@@ -65,7 +65,11 @@ export default function SignUp() {
         alignItems: "center",
       }}
     >
-      <Avatar sx={{ m: 1, bgcolor: "secondary.main" }} component={RouterLink} to={"/"}>
+      <Avatar
+        sx={{ m: 1, bgcolor: "secondary.main" }}
+        component={RouterLink}
+        to={"/"}
+      >
         <LockOutlinedIcon />
       </Avatar>
       <Typography component="h1" variant="h5">
@@ -85,8 +89,20 @@ export default function SignUp() {
               error={!!errors.username}
               {...register("username", {
                 required: true,
-                minLength: { value: 4, message: t("minLength error", { name: t("username"), length: 4 }) },
-                maxLength: { value: 20, message: t("maxLength error", { name: t("username"), length: 20 }) },
+                minLength: {
+                  value: 4,
+                  message: t("minLength error", {
+                    name: t("username"),
+                    length: 4,
+                  }),
+                },
+                maxLength: {
+                  value: 20,
+                  message: t("maxLength error", {
+                    name: t("username"),
+                    length: 20,
+                  }),
+                },
               })}
               helperText={!!errors.username && errors.username.message}
             />
@@ -102,7 +118,10 @@ export default function SignUp() {
               error={!!errors.email}
               {...register("email", {
                 required: true,
-                maxLength: { value: 30, message: "email should be at most 30 characters." },
+                maxLength: {
+                  value: 30,
+                  message: "email should be at most 30 characters.",
+                },
                 pattern: {
                   value:
                     /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
@@ -124,8 +143,20 @@ export default function SignUp() {
               autoComplete="new-password"
               {...register("password1", {
                 required: true,
-                minLength: { value: 6, message: t("minLength error", { name: t("password"), length: 6 }) },
-                maxLength: { value: 20, message: t("maxLength error", { name: t("password"), length: 20 }) },
+                minLength: {
+                  value: 6,
+                  message: t("minLength error", {
+                    name: t("password"),
+                    length: 6,
+                  }),
+                },
+                maxLength: {
+                  value: 20,
+                  message: t("maxLength error", {
+                    name: t("password"),
+                    length: 20,
+                  }),
+                },
               })}
               helperText={!!errors.password1 && errors.password1.message}
             />
@@ -142,16 +173,27 @@ export default function SignUp() {
               error={!!errors.password2}
               {...register("password2", {
                 required: true,
-                validate: (value) => value === password1 || t("password error match"),
+                validate: (value) =>
+                  value === password1 || t("password error match"),
               })}
               helperText={!!errors.password2 && errors.password2.message}
             />
           </Grid>
         </Grid>
-        <Typography variant="subtitle1" sx={{ color: theme.palette.error.main }} gutterBottom>
+        <Typography
+          variant="subtitle1"
+          sx={{ color: theme.palette.error.main }}
+          gutterBottom
+        >
           {error ? error : ""}
         </Typography>
-        <Button type="submit" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }} onClick={handleSubmit(onSubmit)}>
+        <Button
+          type="submit"
+          fullWidth
+          variant="contained"
+          sx={{ mt: 3, mb: 2 }}
+          onClick={handleSubmit(onSubmit)}
+        >
           {t("Sign up")}
         </Button>
         <Grid container justifyContent="flex-end">
@@ -163,5 +205,5 @@ export default function SignUp() {
         </Grid>
       </Box>
     </Box>
-  );
+  )
 }

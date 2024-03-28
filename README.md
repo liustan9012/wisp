@@ -31,7 +31,7 @@ wisp 是一个包含博客、网址导航的个人技术网站，使用 react + 
 
 - UI 组件库使用 MUI 
 - 前端页面路由使用 React Router 
-- 数据获取缓存使用 RTK Query
+- 数据获取缓存使用 SWR
 - 前端数据校验使用 React Hook Form
 - 后端数据校验使用 Pydantic
 - 数据库ORM使用 SQLAlchemy Flask-SQLAlchemy

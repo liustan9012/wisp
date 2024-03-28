@@ -1,28 +1,27 @@
-import * as React from "react";
-import AppBar from "@mui/material/AppBar";
-import Box from "@mui/material/Box";
-import Toolbar from "@mui/material/Toolbar";
-import IconButton from "@mui/material/IconButton";
+import * as React from "react"
+import AdbIcon from "@mui/icons-material/Adb"
+import MenuIcon from "@mui/icons-material/Menu"
+import { Link, Stack, Typography, useTheme } from "@mui/material"
+import AppBar from "@mui/material/AppBar"
+import Box from "@mui/material/Box"
+import Button from "@mui/material/Button"
+import Container from "@mui/material/Container"
+import IconButton from "@mui/material/IconButton"
 // import Typography from '@mui/material/Typography';
-import Menu from "@mui/material/Menu";
-import MenuIcon from "@mui/icons-material/Menu";
-import Container from "@mui/material/Container";
-import Button from "@mui/material/Button";
-import MenuItem from "@mui/material/MenuItem";
-import AdbIcon from "@mui/icons-material/Adb";
-import { Link, Stack, Typography, useTheme } from "@mui/material";
-import { Link as RouterLink, useMatch } from "react-router-dom";
+import Menu from "@mui/material/Menu"
+import MenuItem from "@mui/material/MenuItem"
+import Toolbar from "@mui/material/Toolbar"
+import { useTranslation } from "react-i18next"
+import { Link as RouterLink, useMatch } from "react-router-dom"
 
-import UserAvatar from "../Componets/UserAvatar";
-import { useTranslation } from "react-i18next";
-import { useContext } from "react";
-import LightModeToggle from "../Componets/LightToggle";
-import LanguageToggle from "../Componets/LanguageTogole";
+import LanguageToggle from "../Componets/LanguageTogole"
+import LightModeToggle from "../Componets/LightToggle"
+import UserAvatar from "../Componets/UserAvatar"
 
 function Header() {
-  const [anchorElNav, setAnchorElNav] = React.useState(null);
-  const theme = useTheme();
-  const { t } = useTranslation();
+  const [anchorElNav, setAnchorElNav] = React.useState(null)
+  const theme = useTheme()
+  const { t } = useTranslation()
   const pages = [
     { to: `/posts`, context: t("blog") },
     { to: "/tags", context: t("tag") },
@@ -32,14 +31,14 @@ function Header() {
     to,
     context,
     selected: useMatch({ path: to, end: false }) ? true : false,
-  }));
+  }))
 
   const handleOpenNavMenu = (event) => {
-    setAnchorElNav(event.currentTarget);
-  };
+    setAnchorElNav(event.currentTarget)
+  }
   const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
-  };
+    setAnchorElNav(null)
+  }
 
   return (
     <AppBar
@@ -54,7 +53,12 @@ function Header() {
     >
       <Container maxWidth="xl" sx={{}}>
         <Toolbar disableGutters>
-          <IconButton to="/" component={RouterLink} sx={{ display: { xs: "none", md: "flex" }, mr: 1 }} color="primary">
+          <IconButton
+            to="/"
+            component={RouterLink}
+            sx={{ display: { xs: "none", md: "flex" }, mr: 1 }}
+            color="primary"
+          >
             <AdbIcon />
           </IconButton>
           <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
@@ -87,8 +91,17 @@ function Header() {
               }}
             >
               {pages.map(({ to, context, selected }) => (
-                <MenuItem key={context} onClick={handleCloseNavMenu} selected={selected}>
-                  <Link component={RouterLink} to={to} underline="none" sx={{ width: 1 }}>
+                <MenuItem
+                  key={context}
+                  onClick={handleCloseNavMenu}
+                  selected={selected}
+                >
+                  <Link
+                    component={RouterLink}
+                    to={to}
+                    underline="none"
+                    sx={{ width: 1 }}
+                  >
                     {context}
                   </Link>
                 </MenuItem>
@@ -97,8 +110,17 @@ function Header() {
           </Box>
           <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
             {pages.map(({ to, context, selected }) => (
-              <Button key={context} onClick={handleCloseNavMenu} sx={{ my: 2 }} to={to} component={RouterLink}>
-                <Typography variant="button" color={selected ? theme.palette.primary[900] : "primary"}>
+              <Button
+                key={context}
+                onClick={handleCloseNavMenu}
+                sx={{ my: 2 }}
+                to={to}
+                component={RouterLink}
+              >
+                <Typography
+                  variant="button"
+                  color={selected ? theme.palette.primary[900] : "primary"}
+                >
                   {context}
                 </Typography>
               </Button>
@@ -115,6 +137,6 @@ function Header() {
         </Toolbar>
       </Container>
     </AppBar>
-  );
+  )
 }
-export default Header;
+export default Header

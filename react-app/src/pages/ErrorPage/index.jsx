@@ -1,15 +1,15 @@
-import React from "react";
-import { Typography, Box } from "@mui/material";
-import { useLocation, useRouteError } from "react-router-dom";
+import React from "react"
+import { Box, Typography } from "@mui/material"
+import { useLocation, useRouteError } from "react-router-dom"
 
-import NoMatch from "./NoMatch";
+import NoMatch from "./NoMatch"
 
-export { NoMatch };
+export { NoMatch }
 
 export default function ErrorPage() {
-  const error = useRouteError();
-  const location = useLocation();
-  const state = location.state;
+  const error = useRouteError()
+  const location = useLocation()
+  const state = location.state
   return (
     <Box
       sx={{
@@ -29,5 +29,5 @@ export default function ErrorPage() {
         <i>{state?.message}</i>
       </Typography>
     </Box>
-  );
+  )
 }

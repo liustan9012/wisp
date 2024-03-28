@@ -1,77 +1,76 @@
-import { baseApi } from "./base";
+import useSWR from "swr"
+import useSWRMutation from "swr/mutation"
 
-const tagsApi = baseApi.injectEndpoints({
-  endpoints: (build) => ({
-    getTags: build.query({
-      query: () => ({
-        url: "/tags",
-        method: "get",
-      }),
-      providesTags: ["Tags"],
-    }),
+import request from "./request"
 
-    tagList: build.query({
-      query: ({ params }) => ({
-        url: "/tags/list",
-        method: "get",
-        params,
-      }),
-      providesTags: ["Tags"],
-    }),
+export const useTags = () => {
+  const { data, error, isLoading, mutate } = useSWR({ url: `/tags` }, request)
+  return {
+    data: data,
+    isLoading,
+    isError: error,
+    mutate,
+  }
+}
 
-    newTag: build.mutation({
-      query: ({ name, contentType }) => ({
-        url: "/tag",
-        method: "Post",
-        body: { name, content_type: contentType },
-      }),
-      invalidatesTags: ["Tags", "Tag"],
-    }),
+export const useTagsList = (searchParams) => {
+  const { data, error, isLoading, mutate } = useSWR(
+    { url: `/tags/list`, searchParams },
+    request
+  )
+  return {
+    data: data,
+    isLoading,
+    isError: error,
+    mutate,
+  }
+}
 
-    deleteTag: build.mutation({
-      query: (tagId) => ({
-        url: `/tag/${tagId}/delete`,
-        method: "post",
-      }),
-      invalidatesTags: ["Tags"],
-    }),
+const createTag = async (key, { arg: { name } }) => {
+  return await request(key, { body: { name } })
+}
 
-    updateTag: build.mutation({
-      query: ({ tagId, name, contentType }) => ({
-        url: `/tag/${tagId}`,
-        method: "post",
-        body: { name, content_type: contentType },
-      }),
-      invalidatesTags: ["Tags", "Tag"],
-    }),
+export const useCreateTag = () => {
+  return useSWRMutation({ url: `/tag`, method: "post" }, createTag)
+}
 
-    getTagsPosts: build.query({
-      query: () => ({
-        url: `/tags/posts`,
-        method: "get",
-      }),
-    }),
+const deleteTag = async (key, { arg: tagId }) => {
+  return await request({ url: `/tag/${tagId}/delete`, method: "post" })
+}
 
-    getTag: build.query({
-      query: (tagId) => ({
-        url: `/tag/${tagId}`,
-        method: "get",
-      }),
-      invalidatesTags: ["Tag"],
-    }),
+export const useDeleteTag = () => {
+  return useSWRMutation({ url: `/tag/tagId/delete`, method: "post" }, deleteTag)
+}
 
-    overrideExisting: false,
-  }),
-});
+const updateTag = async (key, { arg: { tagId, name, contentType } }) => {
+  return await request(
+    { url: `/tag/${tagId}`, method: "post" },
+    { body: { name, content_type: contentType } }
+  )
+}
 
-export const {
-  useGetTagsQuery,
-  useTagListQuery,
-  useDeleteTagMutation,
-  useUpdateTagMutation,
-  useNewTagMutation,
-  useGetTagsPostsQuery,
-  useGetTagQuery,
-} = tagsApi;
+export const useUpdateTag = () => {
+  return useSWRMutation({ url: `/tag/tagId/update`, method: "post" }, updateTag)
+}
 
-export default tagsApi;
+export const useTagsPosts = () => {
+  const { data, error, isLoading } = useSWR({ url: `/tags/posts` }, request)
+  return {
+    data: data,
+    isLoading,
+    isError: error,
+  }
+}
+
+export const useTag = (tagId) => {
+  const { data, error, isLoading, isValidating } = useSWR(
+    tagId ? { url: `/tag/${tagId}` } : null,
+    request
+  )
+  return {
+    data: data,
+    isLoading,
+    isValidating,
+    isError: error,
+  }
+}

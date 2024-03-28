@@ -1,39 +1,41 @@
-import * as React from "react";
-import Autocomplete from "@mui/material/Autocomplete";
-import TextField from "@mui/material/TextField";
-import Stack from "@mui/material/Stack";
-import CircularProgress from "@mui/material/CircularProgress";
-import { useDispatch, useSelector } from "react-redux";
+import * as React from "react"
+import Autocomplete from "@mui/material/Autocomplete"
+import CircularProgress from "@mui/material/CircularProgress"
+import Stack from "@mui/material/Stack"
+import TextField from "@mui/material/TextField"
+import { useTranslation } from "react-i18next"
 
-import { setSelectTags, setUserTags } from "./tagSlice";
+import { useTags } from "../../api/tag"
+import { useTagStore } from "../../store"
 
-import PropTypes from "prop-types";
-import { useGetTagsQuery } from "../../api/tag";
-import { useTranslation } from "react-i18next";
-
-function TagsComponent({ isLoading, ChangeTags, reqUserTags }) {
-  const { t } = useTranslation();
-  const tag = useSelector((state) => state.tag);
-  const [open, setOpen] = React.useState(false);
+function TagsComponent({
+  tags,
+  selectTags,
+  isLoading,
+  ChangeTags,
+  reqUserTags,
+}) {
+  const { t } = useTranslation()
+  const [open, setOpen] = React.useState(false)
   return (
     <>
       <Autocomplete
         multiple
         disableCloseOnSelect
         id="select-tags"
-        options={tag?.tags || []}
+        options={tags}
         onChange={ChangeTags}
         getOptionLabel={(tag) => tag.name}
-        value={tag?.selectTags || []}
+        value={selectTags}
         loading={isLoading}
         open={open}
         fullWidth
         onOpen={() => {
-          setOpen(true);
-          reqUserTags();
+          setOpen(true)
+          reqUserTags()
         }}
         onClose={() => {
-          setOpen(false);
+          setOpen(false)
         }}
         isOptionEqualToValue={(tag, value) => tag.name === value.name}
         renderInput={(params) => (
@@ -56,34 +58,29 @@ function TagsComponent({ isLoading, ChangeTags, reqUserTags }) {
         )}
       />
     </>
-  );
+  )
 }
 
-TagsComponent.propTypes = {
-  isLoading: PropTypes.bool,
-  ChangeTags: PropTypes.func,
-  reqUserTags: PropTypes.func,
-};
-
 export default function TagsSelect(props) {
-  const dispatch = useDispatch();
-  const { isLoading, refetch } = useGetTagsQuery();
+  const setUserTags = useTagStore((state) => state.setUserTags)
+  const setSelectTags = useTagStore((state) => state.setSelectTags)
+  const tags = useTagStore((state) => state.tags)
+  const selectTags = useTagStore((state) => state.selectTags)
+  const { isLoading, mutate } = useTags()
 
   const reqUserTags = async () => {
-    const { data } = await refetch();
-    dispatch(
-      setUserTags({
-        tags: data.tags,
-      }),
-    );
-  };
+    const data = await mutate()
+    setUserTags(data.tags)
+  }
   const ChangeTags = (e, value) => {
-    dispatch(setSelectTags({ selectTags: value }));
-  };
+    setSelectTags(value)
+  }
 
   return (
     <Stack {...props}>
-      <TagsComponent {...{ isLoading, ChangeTags, reqUserTags }} />
+      <TagsComponent
+        {...{ tags, selectTags, isLoading, ChangeTags, reqUserTags }}
+      />
     </Stack>
-  );
+  )
 }

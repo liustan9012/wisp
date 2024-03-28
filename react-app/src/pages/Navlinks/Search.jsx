@@ -1,7 +1,6 @@
-import * as React from "react";
-import Box from "@mui/material/Box";
-
-import { Button, Grid, ImageListItem, TextField } from "@mui/material";
+import * as React from "react"
+import { Button, Grid, ImageListItem, TextField } from "@mui/material"
+import Box from "@mui/material/Box"
 
 const searchButtons = [
   {
@@ -22,14 +21,14 @@ const searchButtons = [
     url: "https://www.google.com/",
     search_path: "/search?q=",
   },
-];
+]
 
 export const SearchButtons = () => {
-  const [inputText, setInputText] = React.useState("");
+  const [inputText, setInputText] = React.useState("")
   const handleSearch = ({ url, search_path }) => {
-    const addres = inputText ? url + search_path + inputText : url;
-    window.open(addres);
-  };
+    const addres = inputText ? url + search_path + inputText : url
+    window.open(addres)
+  }
 
   return (
     <>
@@ -91,5 +90,5 @@ export const SearchButtons = () => {
         </Grid>
       </Grid>
     </>
-  );
-};
+  )
+}

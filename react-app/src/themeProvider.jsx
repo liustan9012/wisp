@@ -1,32 +1,31 @@
-import React, { createContext, useEffect, useMemo, useState } from "react";
-import { createTheme, ThemeProvider, useTheme } from "@mui/material/styles";
+import React, { createContext, useEffect, useMemo, useState } from "react"
+import { enUS, zhCN } from "@mui/material/locale"
+import { createTheme, ThemeProvider, useTheme } from "@mui/material/styles"
+import { useTranslation } from "react-i18next"
 
-import { zhCN, enUS } from "@mui/material/locale";
-import { useTranslation } from "react-i18next";
-import { useDispatch, useSelector } from "react-redux";
-import { selectTheme, setPalette } from "./api/themeSlice";
+import { useThemeStore } from "./store"
 
-export const ChangeThemeContext = createContext(() => {});
+export const ChangeThemeContext = createContext(() => {})
 
 function CustmerThemeProvider(props) {
-  const { children } = props;
-  const localetheme = useSelector(selectTheme);
-  const dispatch = useDispatch();
-  const [light, setLight] = useState(localetheme.palette?.mode || "light");
-  const { t, i18n } = useTranslation();
+  const { children } = props
+  const localetheme = useThemeStore((state) => state.theme)
+  const setTheme = useThemeStore((state) => state.setTheme)
+  const [light, setLight] = useState(localetheme.palette?.mode || "light")
+  const { t, i18n } = useTranslation()
 
   useEffect(() => {
-    document.documentElement.setAttribute("data-color-mode", light);
-  }, [light]);
+    document.documentElement.setAttribute("data-color-mode", light)
+  }, [light])
 
   const changeLight = () => {
-    const newLight = light === "light" ? "dark" : "light";
-    setLight(newLight);
-    dispatch(setPalette({ palette: { mode: newLight } }));
-  };
+    const newLight = light === "light" ? "dark" : "light"
+    setLight(newLight)
+    setTheme({ palette: { mode: newLight } })
+  }
   const changeLanguage = (language) => {
-    i18n.changeLanguage(language);
-  };
+    i18n.changeLanguage(language)
+  }
 
   const theme = createTheme(
     {
@@ -39,7 +38,7 @@ function CustmerThemeProvider(props) {
       },
     },
     i18n.language === "en" ? enUS : zhCN
-  );
+  )
 
   const contextValue = useMemo(
     () => ({
@@ -47,13 +46,13 @@ function CustmerThemeProvider(props) {
       changeLanguage,
     }),
     [i18n.language, changeLight, changeLanguage]
-  );
+  )
 
   return (
     <ChangeThemeContext.Provider value={contextValue}>
       <ThemeProvider theme={theme}>{children}</ThemeProvider>
     </ChangeThemeContext.Provider>
-  );
+  )
 }
 
-export default CustmerThemeProvider;
+export default CustmerThemeProvider

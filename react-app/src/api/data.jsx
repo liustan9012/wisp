@@ -1,28 +1,33 @@
-import { baseApi } from "./base";
+import useSWR from "swr"
+import useSWRMutation from "swr/mutation"
 
-const dataapi = baseApi.injectEndpoints({
-  endpoints: (build) => ({
-    uploadNavlink: build.mutation({
-      query: ({ formData }) => ({
-        url: `/navlink/upload`,
-        method: "post",
-        body: formData,
-      }),
-    }),
-    downloadNavlink: build.mutation({
-      query: (downloadParams) => ({
-        url: `/navlink/download`,
-        method: "post",
-        body: downloadParams,
-        responseHandler: (response) => response.text(),
-      }),
-      //   invalidatesTags: ["NavlinkList"],
-    }),
+import request from "./request"
 
-    overrideExisting: false,
-  }),
-});
+const downloadNavlink = async (key, { arg: downloadParams }) => {
+  return await request(key, {
+    body: downloadParams,
+    responseHandler: (response) => response.text(),
+  })
+}
 
-export const { useUploadNavlinkMutation, useDownloadNavlinkMutation } = dataapi;
+export const useDownloadNavlink = () => {
+  return useSWRMutation(
+    { url: `/navlink/download`, method: "post" },
+    downloadNavlink
+  )
+}
 
-export default dataapi;
+const uploadNavlink = async (key, { arg }) => {
+  return await request(key, {
+    body: arg,
+    headers: {},
+    bodyHandler: (body) => body,
+    // responseHandler: (response) => response.text(),
+  })
+}
+export const useUploadNavlink = () => {
+  return useSWRMutation(
+    { url: `/navlink/upload`, method: "post" },
+    uploadNavlink
+  )
+}

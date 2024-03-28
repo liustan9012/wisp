@@ -1,32 +1,28 @@
-import { Delete } from "@mui/icons-material";
-import { Button, Link, Tooltip } from "@mui/material";
-import Box from "@mui/material/Box";
-import Paper from "@mui/material/Paper";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableRow from "@mui/material/TableRow";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import * as React from "react";
+import * as React from "react"
+import { Delete } from "@mui/icons-material"
+import { Button, Link, Tooltip } from "@mui/material"
+import Box from "@mui/material/Box"
+import Paper from "@mui/material/Paper"
+import Table from "@mui/material/Table"
+import TableBody from "@mui/material/TableBody"
+import TableCell from "@mui/material/TableCell"
+import TableContainer from "@mui/material/TableContainer"
+import TableRow from "@mui/material/TableRow"
+import Toolbar from "@mui/material/Toolbar"
+import Typography from "@mui/material/Typography"
+import { useTranslation } from "react-i18next"
 import {
   Link as RouteLink,
   useLocation,
   useSearchParams,
-} from "react-router-dom";
-import { timeConverter } from "../../../utils/datetime";
+} from "react-router-dom"
 
+import { useComments, useDeleteComment } from "../../../api/comment"
+import { timeConverter } from "../../../utils/datetime"
 import {
-  useDeleteCommentMutation,
-  useGetCommentsQuery,
-} from "../../../api/comment";
-import {
-  AdminTablePagination,
   AdminTableHead,
-} from "../../Componets/AsminTable";
-import { paramsToObject } from "../../../utils/converter";
-import { useTranslation } from "react-i18next";
+  AdminTablePagination,
+} from "../../Componets/AsminTable"
 
 const headCells = [
   {
@@ -60,7 +56,7 @@ const headCells = [
     numeric: false,
     label: "action",
   },
-];
+]
 
 export function CommentTableComponet({
   order,
@@ -69,13 +65,12 @@ export function CommentTableComponet({
   page,
   rowsPerPage,
   tabledata,
+  handleDeleteComment,
 }) {
-  const location = useLocation();
-  const { t } = useTranslation();
-  const [selected, setSelected] = React.useState(null);
-  const [deleteComment] = useDeleteCommentMutation();
+  const { t } = useTranslation()
+  const [selected, setSelected] = React.useState(null)
   const emptyRows =
-    page > 0 ? Math.max(0, 1 * rowsPerPage - tabledata.length) : 0;
+    page > 0 ? Math.max(0, 1 * rowsPerPage - tabledata.length) : 0
 
   return (
     <Box
@@ -159,14 +154,14 @@ export function CommentTableComponet({
                           color="warning"
                           startIcon={<Delete />}
                           sx={{ mr: 1, width: 100 }}
-                          onClick={() => deleteComment(id)}
+                          onClick={() => handleDeleteComment(id)}
                         >
                           {t("delete")}
                         </Button>
                       </TableCell>
                     </TableRow>
-                  );
-                },
+                  )
+                }
               )}
               {emptyRows > 0 && (
                 <TableRow
@@ -187,24 +182,29 @@ export function CommentTableComponet({
         />
       </Paper>
     </Box>
-  );
+  )
 }
 
 export default function CommentTable() {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const params = paramsToObject(searchParams.entries());
-  const { data, isLoading } = useGetCommentsQuery({ params });
+  const [searchParams, setSearchParams] = useSearchParams()
+  const { data, isLoading, mutate } = useComments(searchParams)
+  const { trigger: deleteComment } = useDeleteComment()
 
-  if (isLoading) return <Typography>Loading...</Typography>;
+  if (isLoading) return <Typography>Loading...</Typography>
   if (!data || data?.msg === "error")
-    return <Typography>Loading Missing! {`${data?.error}`} </Typography>;
+    return <Typography>Loading Missing! {`${data?.error}`} </Typography>
+  const handleDeleteComment = async (commentId) => {
+    await deleteComment(commentId)
+    mutate()
+  }
   const data_params = {
     page: data.page,
     rowsPerPage: data.per_page,
     total: data.total,
     order: data.order,
     orderBy: data.order_by,
-  };
+    handleDeleteComment,
+  }
 
-  return <CommentTableComponet tabledata={data.comments} {...data_params} />;
+  return <CommentTableComponet tabledata={data.comments} {...data_params} />
 }

@@ -1,11 +1,10 @@
-import * as React from "react";
-import Box from "@mui/material/Box";
-import TableCell from "@mui/material/TableCell";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
-import TableSortLabel from "@mui/material/TableSortLabel";
-import { visuallyHidden } from "@mui/utils";
-import PropTypes from "prop-types";
+import * as React from "react"
+import Box from "@mui/material/Box"
+import TableCell from "@mui/material/TableCell"
+import TableHead from "@mui/material/TableHead"
+import TableRow from "@mui/material/TableRow"
+import TableSortLabel from "@mui/material/TableSortLabel"
+import { visuallyHidden } from "@mui/utils"
 
 export default function AdminTableHead({
   headCells,
@@ -14,8 +13,8 @@ export default function AdminTableHead({
   onRequestSort,
 }) {
   const createSortHandler = (property) => (event) => {
-    onRequestSort(event, property);
-  };
+    onRequestSort(event, property)
+  }
 
   return (
     <TableHead>
@@ -44,12 +43,5 @@ export default function AdminTableHead({
         ))}
       </TableRow>
     </TableHead>
-  );
+  )
 }
-
-AdminTableHead.propTypes = {
-  headCells: PropTypes.array.isRequired,
-  onRequestSort: PropTypes.func.isRequired,
-  order: PropTypes.oneOf(["asc", "desc"]).isRequired,
-  orderBy: PropTypes.string.isRequired,
-};

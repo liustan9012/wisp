@@ -1,24 +1,22 @@
-import React from "react";
-import { Typography, Stack, Paper, Link, Divider } from "@mui/material";
-import Pagination from "@mui/material/Pagination";
-import PaginationItem from "@mui/material/PaginationItem";
+import React from "react"
+import { Divider, Link, Paper, Stack, Typography } from "@mui/material"
+import Pagination from "@mui/material/Pagination"
+import PaginationItem from "@mui/material/PaginationItem"
+import { useTranslation } from "react-i18next"
+import { Link as RouterLink, useSearchParams } from "react-router-dom"
 
-import { Link as RouterLink, useSearchParams } from "react-router-dom";
-import { useGetPostListQuery } from "../../api/post";
-import { timeConverter } from "../../utils/datetime";
-import { paramsToObject } from "../../utils/converter";
-import { useTranslation } from "react-i18next";
+import { usePostList } from "../../api/post"
+import { timeConverter } from "../../utils/datetime"
 
 export default function TimeLine() {
-  const { t } = useTranslation();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const params = paramsToObject(searchParams.entries());
-  params.per_page = 20;
-  const { data, isLoading } = useGetPostListQuery({ params });
-  if (isLoading) return <Typography>Loading...</Typography>;
-  if (!data || data?.msg === "error") return <Typography>{t("Missing post!")}</Typography>;
-  if (data.pages == 0) return <Typography>{t("no posts yet")}</Typography>;
-  const { posts } = data;
+  const { t } = useTranslation()
+  const [searchParams, setSearchParams] = useSearchParams({ per_page: 20 })
+  const { data, isLoading } = usePostList(searchParams)
+  if (isLoading) return <Typography>{t("Loading...")}</Typography>
+  if (!data || data?.msg === "error")
+    return <Typography>{t("Missing post!")}</Typography>
+  if (data.pages == 0) return <Typography>{t("no posts yet")}</Typography>
+  const { posts } = data
   return (
     <Paper elevation={0} sx={{ mt: 4 }}>
       {posts.map((post) => (
@@ -30,7 +28,9 @@ export default function TimeLine() {
           divider={<Divider orientation="vertical" flexItem />}
           sx={{ minHeight: "3rem", justifyContent: "flex-start" }}
         >
-          <Typography sx={{ width: 100 }}>{timeConverter(post.created_at).slice(0, 10)}</Typography>
+          <Typography sx={{ width: 100 }}>
+            {timeConverter(post.created_at).slice(0, 10)}
+          </Typography>
           <Link to={`/post/${post.id}`} component={RouterLink} underline="none">
             {post.title}
           </Link>
@@ -53,5 +53,5 @@ export default function TimeLine() {
         ""
       )}
     </Paper>
-  );
+  )
 }

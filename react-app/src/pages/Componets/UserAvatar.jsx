@@ -1,95 +1,103 @@
-import * as React from "react";
-import { Box, Tooltip, IconButton, Menu, Link, useTheme, MenuItem } from "@mui/material";
-import { useDispatch, useSelector } from "react-redux";
-import { Link as RouterLink, useLocation, useMatch, useNavigate } from "react-router-dom";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import StringAvatar from "../../Componets/StringAvatar";
-import { selectCurrentAuth, unsetUser } from "../../api/authSlice";
-import { useSignOutMutation } from "../../api/auth";
-import { useTranslation } from "react-i18next";
+import * as React from "react"
+import AccountCircleIcon from "@mui/icons-material/AccountCircle"
+import { IconButton, Link, Menu, MenuItem, useTheme } from "@mui/material"
+import { useTranslation } from "react-i18next"
+import {
+  Link as RouterLink,
+  useLocation,
+  useMatch,
+  useNavigate,
+} from "react-router-dom"
+
+import { useSignOut } from "../../api/auth"
+import StringAvatar from "../../Componets/StringAvatar"
+import { useAuthStore } from "../../store"
 
 const UserAvatar = ({ adminMenus }) => {
-  const [anchorElUser, setAnchorElUser] = React.useState(null);
-  const { t } = useTranslation();
-  const theme = useTheme();
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const dashBoardMatch = useMatch({ path: "/admin", end: false });
-  const auth = useSelector(selectCurrentAuth);
-  const [
-    signOut,
-    // { isLoading, isError },
-  ] = useSignOutMutation();
+  const [anchorElUser, setAnchorElUser] = React.useState(null)
+  const { t } = useTranslation()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const currentUrl = `${location.pathname}${location.search}`
+  const dashBoardMatch = useMatch({ path: "/admin", end: false })
+  const auth = useAuthStore((state) => state.auth)
+  const unsetUser = useAuthStore((state) => state.unsetUser)
+  const { trigger: signOut } = useSignOut()
+
   const handleOpenUserMenu = (event) => {
-    setAnchorElUser(event.currentTarget);
-  };
+    setAnchorElUser(event.currentTarget)
+  }
   const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
-  };
+    setAnchorElUser(null)
+  }
 
   const handleSignOut = async () => {
     try {
-      await signOut().unwrap();
-      dispatch(unsetUser());
-      navigate(location || "/");
-      // }
+      await signOut()
     } catch (error) {
-      console.error(error);
+      console.log(error)
     }
-  };
+    unsetUser()
+    navigate(0)
+  }
 
   const menusGuest = [
     { key: t("signin"), to: "/signin" },
     { key: t("signup"), to: "/signup" },
-  ];
+  ]
 
   const logoutMenu = {
     key: t("logout"),
-    to: "/",
-    onClick: () => {
-      handleSignOut();
-      handleCloseUserMenu();
+    to: currentUrl || "/",
+    onClick: async () => {
+      await handleSignOut()
+      handleCloseUserMenu()
     },
-  };
+  }
   const changepasswordMenu = {
     key: t("settings"),
     to: "/settings",
-  };
+  }
 
-  const menusUser = [{ key: t("home"), to: "/" }, changepasswordMenu, logoutMenu];
+  const menusUser = [
+    { key: t("home"), to: "/" },
+    changepasswordMenu,
+    logoutMenu,
+  ]
   const menusAdmin = [
     { key: t("new post"), to: "/post/new" },
     { key: t("dashboard"), to: "/admin" },
-  ].concat(menusUser);
+  ].concat(menusUser)
 
   const menusDashBoard = [
     { key: t("new post"), to: "/admin/post/create" },
     { key: t("new navlink"), to: "/admin/navlink/create" },
     changepasswordMenu,
     logoutMenu,
-  ];
+  ]
 
-  let menus = (!!adminMenus && auth.isAdmin ? adminMenus : []).map(({ key, to, onClick }) => ({
-    key,
-    to,
-    onClick: () => {
-      onClick();
-      handleCloseUserMenu();
-    },
-  }));
+  let menus = (!!adminMenus && auth.isAdmin ? adminMenus : []).map(
+    ({ key, to, onClick }) => ({
+      key,
+      to,
+      onClick: () => {
+        onClick()
+        handleCloseUserMenu()
+      },
+    })
+  )
   if (!!auth?.username) {
     if (auth.isAdmin) {
       if (dashBoardMatch) {
-        menus.push(...menusDashBoard);
+        menus.push(...menusDashBoard)
       } else {
-        menus.push(...menusAdmin);
+        menus.push(...menusAdmin)
       }
     } else {
-      menus.push(...menusUser);
+      menus.push(...menusUser)
     }
   } else {
-    menus.push(...menusGuest);
+    menus.push(...menusGuest)
   }
   return (
     <>
@@ -117,7 +125,11 @@ const UserAvatar = ({ adminMenus }) => {
         onClose={handleCloseUserMenu}
       >
         {menus.map(({ key, to, onClick }) => (
-          <MenuItem key={key} onClick={onClick || handleCloseUserMenu} disableGutters>
+          <MenuItem
+            key={key}
+            onClick={onClick || handleCloseUserMenu}
+            disableGutters
+          >
             <Link
               sx={{ width: 1, pl: 2, pr: 2 }}
               component={RouterLink}
@@ -131,7 +143,7 @@ const UserAvatar = ({ adminMenus }) => {
         ))}
       </Menu>
     </>
-  );
-};
+  )
+}
 
-export default UserAvatar;
+export default UserAvatar

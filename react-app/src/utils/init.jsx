@@ -5,4 +5,4 @@ export const INITUSER =
         email: "admin@admin.com",
         password: "admin123",
       }
-    : { username: "", email: "", password: "" };
+    : { username: "", email: "", password: "" }

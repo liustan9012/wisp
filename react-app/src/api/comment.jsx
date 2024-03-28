@@ -1,50 +1,55 @@
-import { baseApi } from "./base";
+import useSWR from "swr"
+import useSWRMutation from "swr/mutation"
 
-const commentApi = baseApi.injectEndpoints({
-  endpoints: (build) => ({
-    newComment: build.mutation({
-      query: ({ content, parentId, postId }) => ({
-        url: `/post/${postId}/comment/add`,
-        method: "post",
-        body: { content, parent_id: parentId },
-      }),
-      invalidatesTags: ["Post", "Comments"],
-    }),
+import request from "./request"
 
-    deleteComment: build.mutation({
-      query: (commentId) => ({
-        url: `/comment/${commentId}/delete`,
-        method: "post",
-      }),
-      invalidatesTags: ["Post", "Comments"],
-    }),
+const createComment = async (key, { arg: { content, parentId, postId } }) => {
+  return await request(
+    { url: `/post/${postId}/comment/add`, method: "post" },
+    { body: { content, parent_id: parentId } }
+  )
+}
 
-    getPostComments: build.mutation({
-      query: (postId) => ({
-        url: `/post/${postId}/comments`,
-        method: "get",
-      }),
-      providesTags: ["Comments"],
-    }),
+export const useCreateComment = () => {
+  return useSWRMutation(
+    { url: `/post/postId/comment/add`, method: "post" },
+    createComment
+  )
+}
 
-    getComments: build.query({
-      query: ({ params }) => ({
-        url: `/comments`,
-        method: "get",
-        params,
-      }),
-      providesTags: ["Comments"],
-    }),
+const deleteComment = async (key, { arg: commentId }) => {
+  return await request({ url: `/comment/${commentId}/delete`, method: "post" })
+}
 
-    overrideExisting: false,
-  }),
-});
+export const useDeleteComment = () => {
+  return useSWRMutation(
+    { url: `/comment/commentId/delete`, method: "post" },
+    deleteComment
+  )
+}
 
-export const {
-  useNewCommentMutation,
-  useDeleteCommentMutation,
-  useGetPostCommentsMutation,
-  useGetCommentsQuery,
-} = commentApi;
+export const usePostComments = (postId) => {
+  const { data, error, isLoading, mutate } = useSWR(
+    { url: `/post/${postId}/comments`, searchParams },
+    request
+  )
+  return {
+    data: data,
+    isLoading,
+    isError: error,
+    mutate,
+  }
+}
 
-export default commentApi;
+export const useComments = (searchParams) => {
+  const { data, error, isLoading, mutate } = useSWR(
+    { url: `/comments`, searchParams },
+    request
+  )
+  return {
+    data: data,
+    isLoading,
+    isError: error,
+    mutate,
+  }
+}

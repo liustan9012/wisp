@@ -1,7 +1,7 @@
 export function paramsToObject(entries) {
-  const result = {};
+  const result = {}
   for (const [key, value] of entries) {
-    result[key] = value;
+    result[key] = value
   }
-  return result;
+  return result
 }

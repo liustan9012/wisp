@@ -1,34 +1,41 @@
-import React from "react";
-import ArticleIcon from "@mui/icons-material/Article";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import CommentIcon from "@mui/icons-material/Comment";
-import LabelIcon from "@mui/icons-material/Label";
-import LinkIcon from "@mui/icons-material/Link";
-import PersonIcon from "@mui/icons-material/Person";
-import Divider from "@mui/material/Divider";
-import { Drawer, Box, Tooltip, Menu, Link, Stack, Button, ListItemButton } from "@mui/material";
-import IconButton from "@mui/material/IconButton";
-import List from "@mui/material/List";
-import ListSubheader from "@mui/material/ListSubheader";
-import MenuIcon from "@mui/icons-material/Menu";
-import MuiAppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
-import Typography from "@mui/material/Typography";
-import { useTheme, styled } from "@mui/material/styles";
-import NestedListItem from "../Componets/NestedListItem";
-import PropTypes from "prop-types";
-import { Link as RouterLink } from "react-router-dom";
+import React from "react"
+import ArticleIcon from "@mui/icons-material/Article"
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft"
+import ChevronRightIcon from "@mui/icons-material/ChevronRight"
+import CommentIcon from "@mui/icons-material/Comment"
+import DatasetOutlinedIcon from "@mui/icons-material/DatasetOutlined"
+import LabelIcon from "@mui/icons-material/Label"
+import LinkIcon from "@mui/icons-material/Link"
+import MenuIcon from "@mui/icons-material/Menu"
+import PersonIcon from "@mui/icons-material/Person"
+import {
+  Box,
+  Button,
+  Drawer,
+  Link,
+  ListItemButton,
+  Menu,
+  Stack,
+  Tooltip,
+} from "@mui/material"
+import MuiAppBar from "@mui/material/AppBar"
+import Divider from "@mui/material/Divider"
+import IconButton from "@mui/material/IconButton"
+import List from "@mui/material/List"
+import ListSubheader from "@mui/material/ListSubheader"
+import { styled, useTheme } from "@mui/material/styles"
+import Toolbar from "@mui/material/Toolbar"
+import Typography from "@mui/material/Typography"
+import { useTranslation } from "react-i18next"
+import { Link as RouterLink } from "react-router-dom"
 
-import { useSelector } from "react-redux";
-import { selectCurrentAuth } from "../../api/authSlice";
-import UserAvatar from "../Componets/UserAvatar";
-import { useTranslation } from "react-i18next";
-import LanguageToggle from "../Componets/LanguageTogole";
-import LightModeToggle from "../Componets/LightToggle";
-import DatasetOutlinedIcon from "@mui/icons-material/DatasetOutlined";
+import { useAuthStore } from "../../store"
+import LanguageToggle from "../Componets/LanguageTogole"
+import LightModeToggle from "../Componets/LightToggle"
+import NestedListItem from "../Componets/NestedListItem"
+import UserAvatar from "../Componets/UserAvatar"
 
-const drawerWidth = 240;
+const drawerWidth = 240
 
 const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== "open",
@@ -45,17 +52,17 @@ const AppBar = styled(MuiAppBar, {
       duration: theme.transitions.duration.enteringScreen,
     }),
   }),
-}));
+}))
 
 export function DashboardAppBar({ open, handleDrawerOpen }) {
-  const theme = useTheme();
-  const { t } = useTranslation();
-  const auth = useSelector(selectCurrentAuth);
-  const [anchorElUser, setAnchorElUser] = React.useState(null);
+  const theme = useTheme()
+  const { t } = useTranslation()
+  const auth = useAuthStore((state) => state.auth)
+  const [anchorElUser, setAnchorElUser] = React.useState(null)
   const handleCloseUserMenu = () => {
-    setAnchorElUser(null);
-  };
-  const handleOpenUserMenu = () => {};
+    setAnchorElUser(null)
+  }
+  const handleOpenUserMenu = () => {}
   return (
     <>
       <AppBar position="fixed" open={open}>
@@ -82,10 +89,22 @@ export function DashboardAppBar({ open, handleDrawerOpen }) {
             </Typography>
           </Box>
           <Stack direction={"row"}>
-            <Button component={RouterLink} to="/" variant="h6" color="inherit" underline="none">
+            <Button
+              component={RouterLink}
+              to="/"
+              variant="h6"
+              color="inherit"
+              underline="none"
+            >
               {t("home")}
             </Button>
-            <Button component={RouterLink} to="/navlink" variant="h6" color="inherit" underline="none">
+            <Button
+              component={RouterLink}
+              to="/navlink"
+              variant="h6"
+              color="inherit"
+              underline="none"
+            >
               {t("navlink")}
             </Button>
           </Stack>
@@ -97,12 +116,8 @@ export function DashboardAppBar({ open, handleDrawerOpen }) {
         </Toolbar>
       </AppBar>
     </>
-  );
+  )
 }
-DashboardAppBar.propTypes = {
-  open: PropTypes.bool,
-  handleDrawerOpen: PropTypes.func,
-};
 
 export const DrawerHeader = styled("div")(({ theme }) => ({
   display: "flex",
@@ -111,11 +126,11 @@ export const DrawerHeader = styled("div")(({ theme }) => ({
   // necessary for content to be below app bar
   ...theme.mixins.toolbar,
   justifyContent: "flex-end",
-}));
+}))
 
 export function DashboardDrawer({ open, handleDrawerClose }) {
-  const theme = useTheme();
-  const { t } = useTranslation();
+  const theme = useTheme()
+  const { t } = useTranslation()
   return (
     <Drawer
       sx={{
@@ -132,7 +147,11 @@ export function DashboardDrawer({ open, handleDrawerClose }) {
     >
       <DrawerHeader>
         <IconButton onClick={handleDrawerClose}>
-          {theme.direction === "ltr" ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+          {theme.direction === "ltr" ? (
+            <ChevronLeftIcon />
+          ) : (
+            <ChevronRightIcon />
+          )}
         </IconButton>
       </DrawerHeader>
       <Divider />
@@ -141,7 +160,11 @@ export function DashboardDrawer({ open, handleDrawerClose }) {
         component="nav"
         aria-labelledby="admin-dashboard"
         subheader={
-          <ListSubheader component="div" id="nested-list-subheader" sx={{ textTransform: "capitalize" }}>
+          <ListSubheader
+            component="div"
+            id="nested-list-subheader"
+            sx={{ textTransform: "capitalize" }}
+          >
             {t("admin dashboard")}
           </ListSubheader>
         }
@@ -174,7 +197,9 @@ export function DashboardDrawer({ open, handleDrawerClose }) {
               icon: CommentIcon,
               text: t("comment"),
             },
-            nestedItems: [{ to: "/admin/comment/list", text: t("comment list") }],
+            nestedItems: [
+              { to: "/admin/comment/list", text: t("comment list") },
+            ],
           },
           {
             item: { to: "/admin/navlink", icon: LinkIcon, text: t("link") },
@@ -184,21 +209,19 @@ export function DashboardDrawer({ open, handleDrawerClose }) {
             ],
           },
           {
-            item: { to: "/admin/dataset", icon: DatasetOutlinedIcon, text: t("dataset") },
-
+            item: {
+              to: "/admin/dataset",
+              icon: DatasetOutlinedIcon,
+              text: t("dataset"),
+            },
           },
         ].map(({ item, nestedItems }) => (
           <NestedListItem key={item.to} item={item} nestedItems={nestedItems} />
         ))}
       </List>
     </Drawer>
-  );
+  )
 }
-
-DashboardDrawer.propTypes = {
-  open: PropTypes.bool,
-  handleDrawerClose: PropTypes.func,
-};
 
 export const Main = styled("main", {
   shouldForwardProp: (prop) => prop !== "open",
@@ -217,4 +240,4 @@ export const Main = styled("main", {
     }),
     marginLeft: 0,
   }),
-}));
+}))

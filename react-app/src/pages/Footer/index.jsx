@@ -1,9 +1,9 @@
-import * as React from "react";
-import { Typography, Link } from "@mui/material";
-import { useTranslation } from "react-i18next";
+import * as React from "react"
+import { Link, Typography } from "@mui/material"
+import { useTranslation } from "react-i18next"
 
 export default function Footer(props) {
-  const { t } = useTranslation();
+  const { t } = useTranslation()
   return (
     <Typography
       variant="body2"
@@ -13,7 +13,7 @@ export default function Footer(props) {
         mt: 4,
         mb: 4,
         flex: "0 0 auto",
-        flexGrow:0,
+        flexGrow: 0,
       }}
       {...props}
     >
@@ -26,5 +26,5 @@ export default function Footer(props) {
         {"github"}
       </Link>
     </Typography>
-  );
+  )
 }

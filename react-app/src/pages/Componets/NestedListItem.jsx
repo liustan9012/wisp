@@ -1,17 +1,15 @@
-import CircleIcon from "@mui/icons-material/Circle";
-import ExpandLess from "@mui/icons-material/ExpandLess";
-import ExpandMore from "@mui/icons-material/ExpandMore";
-import { Typography } from "@mui/material";
-import Collapse from "@mui/material/Collapse";
-import List from "@mui/material/List";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
-import PropTypes from "prop-types";
-import * as React from "react";
-import { NavLink, useMatch, useNavigate } from "react-router-dom";
-
-import { styled } from "@mui/material/styles";
+import * as React from "react"
+import CircleIcon from "@mui/icons-material/Circle"
+import ExpandLess from "@mui/icons-material/ExpandLess"
+import ExpandMore from "@mui/icons-material/ExpandMore"
+import { Typography } from "@mui/material"
+import Collapse from "@mui/material/Collapse"
+import List from "@mui/material/List"
+import ListItemButton from "@mui/material/ListItemButton"
+import ListItemIcon from "@mui/material/ListItemIcon"
+import ListItemText from "@mui/material/ListItemText"
+import { styled } from "@mui/material/styles"
+import { NavLink, useMatch, useNavigate } from "react-router-dom"
 
 const Nav = styled(NavLink)(() => ({
   textDecoration: "none",
@@ -21,16 +19,16 @@ const Nav = styled(NavLink)(() => ({
   // necessary for content to be below app bar
   // ...theme.mixins.,
   // justifyContent: 'flex-end',
-}));
+}))
 
 export default function NestedListItem({ item, nestedItems }) {
-  const match = useMatch({ path: item.to, end: false });
-  const [open, setOpen] = React.useState(match ? true : false);
+  const match = useMatch({ path: item.to, end: false })
+  const [open, setOpen] = React.useState(match ? true : false)
 
   const handleClick = () => {
-    setOpen(!open);
-  };
-  const matchColor = match ? "primary" : "inherit";
+    setOpen(!open)
+  }
+  const matchColor = match ? "primary" : "inherit"
   if (!!!nestedItems)
     return (
       <ListItemButton component={Nav} to={item.to} selected={!!match}>
@@ -45,7 +43,7 @@ export default function NestedListItem({ item, nestedItems }) {
           }
         />
       </ListItemButton>
-    );
+    )
 
   return (
     <>
@@ -60,7 +58,11 @@ export default function NestedListItem({ item, nestedItems }) {
             </Typography>
           }
         />
-        {open ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />}
+        {open ? (
+          <ExpandLess fontSize="small" />
+        ) : (
+          <ExpandMore fontSize="small" />
+        )}
       </ListItemButton>
       <Collapse in={open} timeout="auto" unmountOnExit>
         <List component="div" disablePadding>
@@ -76,7 +78,10 @@ export default function NestedListItem({ item, nestedItems }) {
                   </ListItemIcon>
                   <ListItemText
                     primary={
-                      <Typography color={isActive ? "primary" : "inherit"} sx={{ textTransform: "capitalize" }}>
+                      <Typography
+                        color={isActive ? "primary" : "inherit"}
+                        sx={{ textTransform: "capitalize" }}
+                      >
                         {nested.text}{" "}
                       </Typography>
                     }
@@ -88,10 +93,5 @@ export default function NestedListItem({ item, nestedItems }) {
         </List>
       </Collapse>
     </>
-  );
+  )
 }
-
-NestedListItem.propTypes = {
-  item: PropTypes.object,
-  nestedItems: PropTypes.array,
-};

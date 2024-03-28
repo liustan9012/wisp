@@ -1,4 +1,4 @@
-import TagTable from "./TagTable";
-import CreateTag from "./CreateTag";
+import CreateTag from "./CreateTag"
+import TagTable from "./TagTable"
 
-export { TagTable, CreateTag };
+export { TagTable, CreateTag }
