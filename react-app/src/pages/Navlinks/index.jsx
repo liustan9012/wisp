@@ -7,8 +7,10 @@ import {
   Box,
   Button,
   Container,
+  DialogActions,
   Drawer,
   IconButton,
+  ImageListItem,
   Link,
   Stack,
   Toolbar,
@@ -19,7 +21,7 @@ import DialogContent from "@mui/material/DialogContent"
 import { useTranslation } from "react-i18next"
 import { Link as RouterLink } from "react-router-dom"
 
-import { useLinks } from "../../api/navlink"
+import { useDeleteNavlink, useLinks } from "../../api/navlink"
 import { useTagStore } from "../../store"
 import LanguageToggle from "../Componets/LanguageTogole"
 import LightModeToggle from "../Componets/LightToggle"
@@ -27,6 +29,9 @@ import UserAvatar from "../Componets/UserAvatar"
 import { Navlink } from "../Dashboard/Navlink/CreateNavlink"
 import NavlinkTable from "./NavlinkTable"
 import { SearchButtons } from "./Search"
+
+const EditAction = "EditAction"
+const DeleteAction = "DeleteAction"
 
 const scrollToElement = ({ elementId, offset }) => {
   const element = document.getElementById(elementId)
@@ -94,11 +99,68 @@ const SideBar = ({ tags }) => {
   )
 }
 
-const NewNavlinkDialog = ({ open, navlink, handleClose }) => {
-  const handleSucess = (data) => {
+const DeleteNavlinkDialog = ({ open, navlink, handleClose }) => {
+  const { t } = useTranslation()
+  const { trigger: deleteNavlink } = useDeleteNavlink()
+  const handleDeleteNavlink = async () => {
+    await deleteNavlink(navlink.id)
     handleClose()
   }
 
+  return (
+    <Dialog open={open} onClose={handleClose} sx={{ flex: 1 }} fullWidth>
+      <IconButton
+        aria-label="close"
+        onClick={handleClose}
+        sx={{
+          position: "absolute",
+          right: 8,
+          top: 8,
+        }}
+      >
+        <CloseIcon />
+      </IconButton>
+      <DialogContent sx={{ p: 4 }}>
+        <Stack direction={"row"} spacing={1}>
+          <ImageListItem sx={{ display: "flex", alignItems: "center" }}>
+            {navlink?.favicon ? (
+              <img
+                src={navlink?.favicon}
+                loading="lazy"
+                style={{ width: 32, height: 32 }}
+              />
+            ) : (
+              <Web fontSize="small" color="primary" />
+            )}
+          </ImageListItem>
+          <Typography variant="h6">{navlink.linkname}</Typography>
+        </Stack>
+        <Typography variant="body2" sx={{ mt: 2 }}>
+          {navlink.description}
+        </Typography>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClose}>{t("cancel")}</Button>
+        <Button color="warning" onClick={handleDeleteNavlink}>
+          {t("delete")}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}
+
+const NavlinkDialog = ({ open, action, navlink, handleClose }) => {
+  if (action == DeleteAction) {
+    return (
+      <DeleteNavlinkDialog
+        {...{
+          open,
+          navlink,
+          handleClose,
+        }}
+      />
+    )
+  }
   return (
     <Dialog open={open} onClose={handleClose} sx={{ flex: 1 }}>
       <IconButton
@@ -108,13 +170,12 @@ const NewNavlinkDialog = ({ open, navlink, handleClose }) => {
           position: "absolute",
           right: 8,
           top: 8,
-          color: (theme) => theme.palette.grey[500],
         }}
       >
         <CloseIcon />
       </IconButton>
       <DialogContent sx={{ p: 4 }}>
-        <Navlink navlink={navlink} handleSucess={handleSucess} />
+        <Navlink navlink={navlink} handleSucess={handleClose} />
         {/* <CreateNavlink /> */}
       </DialogContent>
     </Dialog>
@@ -135,22 +196,39 @@ const Navlinks = (props) => {
   const [newNavOpen, setNewNavOpen] = useState(false)
   const [editable, setEditable] = useState(false)
   const [navlink, setNavlink] = useState(null)
+  const [action, setAction] = useState(EditAction)
   const setSelectTags = useTagStore((state) => state.setSelectTags)
   const handleAddNavlink = (tag) => () => {
     const tags = tag.name === "default" ? [] : [tag]
     setSelectTags(tags)
+    setAction(EditAction)
     setNavlink(null)
     setNewNavOpen(!newNavOpen)
   }
   const handleEditNavlink = (navlink) => () => {
-    // const tags = tag.name === "default" ? [] : [tag]
     setSelectTags(navlink.tags)
     setNavlink(navlink)
     setNewNavOpen(!newNavOpen)
   }
+
+  const handleDeleteNavlink = (navlink) => () => {
+    setSelectTags(navlink.tags)
+    setAction(DeleteAction)
+    setNavlink(navlink)
+    setNewNavOpen(!newNavOpen)
+  }
+
   const handleDone = () => {
     setEditable(!editable)
   }
+
+  const handleClose = () => {
+    setNewNavOpen(!newNavOpen)
+    setAction(EditAction)
+    setNavlink(null)
+    mutate()
+  }
+
   const { data, isLoading, mutate } = useLinks()
   const tagNavlinks = data?.tag_navlinks || []
   // useEffect(() => {
@@ -163,14 +241,6 @@ const Navlinks = (props) => {
   //         document.body.style = bodyStyle
   //     }
   // }, [])
-
-  if (isLoading) {
-    return (
-      <Container disableGutters sx={{ marginTop: 2 }}>
-        <Typography>NavLinkPage </Typography>
-      </Container>
-    )
-  }
 
   const drawerWidth = 200
   return (
@@ -255,32 +325,34 @@ const Navlinks = (props) => {
                     {
                       key: t("edite"),
                       to: "",
-                      // onClick: () => setNewNavOpen(!newNavOpen),
                       onClick: () => setEditable(!editable),
                     },
                   ]}
-                />
-                <NewNavlinkDialog
-                  open={newNavOpen}
-                  navlink={navlink}
-                  handleClose={() => {
-                    setNewNavOpen(!newNavOpen)
-                    mutate()
-                  }}
                 />
               </Stack>
             </Box>
           </Toolbar>
         </AppBar>
         <SearchButtons></SearchButtons>
-        <NavlinkTable
-          tagNavlinks={tagNavlinks}
-          editable={editable}
-          handleDone={handleDone}
-          handleEditNavlink={handleEditNavlink}
-          handleAddNavlink={handleAddNavlink}
-        />
+        {isLoading ? (
+          <Typography>NavLinkPage </Typography>
+        ) : (
+          <NavlinkTable
+            tagNavlinks={tagNavlinks}
+            editable={editable}
+            handleDone={handleDone}
+            handleAddNavlink={handleAddNavlink}
+            handleEditNavlink={handleEditNavlink}
+            handleDeleteNavlink={handleDeleteNavlink}
+          />
+        )}
       </Box>
+      <NavlinkDialog
+        open={newNavOpen}
+        action={action}
+        navlink={navlink}
+        handleClose={handleClose}
+      />
     </Container>
   )
 }

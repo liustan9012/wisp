@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { Web } from "@mui/icons-material"
+import DeleteIcon from "@mui/icons-material/Delete"
 import EditIcon from "@mui/icons-material/Edit"
 import {
   Box,
@@ -16,7 +17,12 @@ import {
 } from "@mui/material"
 import { useTranslation } from "react-i18next"
 
-const Navlink = ({ navlink, editable, handleNavlink }) => {
+const Navlink = ({
+  navlink,
+  editable,
+  handleEditNavlink,
+  handleDeleteNavlink,
+}) => {
   const { id, linkname, favicon, url, description } = navlink
   const initElevation = 2
   const [elevation, setElevation] = useState(initElevation)
@@ -94,16 +100,28 @@ const Navlink = ({ navlink, editable, handleNavlink }) => {
             </Typography>
           </Box>
           {editable ? (
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.preventDefault()
-                handleNavlink()
-              }}
-              sx={{ p: 0 }}
-            >
-              <EditIcon />
-            </IconButton>
+            <Box>
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  e.preventDefault()
+                  handleEditNavlink()
+                }}
+                sx={{ p: 0 }}
+              >
+                <EditIcon />
+              </IconButton>
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  e.preventDefault()
+                  handleDeleteNavlink()
+                }}
+                sx={{ p: 0 }}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </Box>
           ) : (
             ""
           )}
@@ -137,6 +155,7 @@ const NavlinkTable = ({
   handleDone,
   handleAddNavlink,
   handleEditNavlink,
+  handleDeleteNavlink,
 }) => {
   const { t } = useTranslation()
 
@@ -159,7 +178,8 @@ const NavlinkTable = ({
                 key={navlink.id}
                 navlink={navlink}
                 editable={editable}
-                handleNavlink={handleEditNavlink(navlink)}
+                handleEditNavlink={handleEditNavlink(navlink)}
+                handleDeleteNavlink={handleDeleteNavlink(navlink)}
               />
             ))}
             {editable ? (
