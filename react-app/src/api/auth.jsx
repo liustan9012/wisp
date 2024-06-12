@@ -65,11 +65,16 @@ export const useUsers = (searchParams) => {
 }
 
 const refresh = async () => {
-  return await request({
-    url: "/refresh",
-    method: "post",
-    authorization: "refreshToken",
-  })
+  try {
+    const refreshResponse = await request({
+      url: "/refresh",
+      method: "post",
+      authorization: "refreshToken",
+    })
+    return refreshResponse
+  } catch (error) {
+    return error
+  }
 }
 
 export const useSWROptions = () => {
